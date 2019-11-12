@@ -1,26 +1,20 @@
 <template>
   <el-dialog :append-to-body="true" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
-      <el-form-item label="申请单据id,来自application_documents.id" >
-        <el-input v-model="form.documentId" style="width: 370px;"/>
+      <el-form-item label="摘要" >
+        <el-input v-model="form.todoAbstract" style="width: 370px;"/>
       </el-form-item>
-      <el-form-item label="申请人，来自user.id" >
-        <el-input v-model="form.userId" style="width: 370px;"/>
+      <el-form-item label="预期完成时间" >
+        <el-input v-model="form.expectedCompletionTime" style="width: 370px;"/>
       </el-form-item>
-      <el-form-item label="审核人，来自user.name" >
-        <el-input v-model="form.userName" style="width: 370px;"/>
+      <el-form-item label="抄送人" >
+        <el-input v-model="form.copyPersonName" style="width: 370px;"/>
       </el-form-item>
-      <el-form-item label="审核级数，从1开始" >
-        <el-input v-model="form.sorted" style="width: 370px;"/>
+      <el-form-item label="协助人员" >
+        <el-input v-model="form.assistantName" style="width: 370px;"/>
       </el-form-item>
-      <el-form-item label="来源（0:申请流程,1:报销流程）" >
-        <el-input v-model="form.source" style="width: 370px;"/>
-      </el-form-item>
-      <el-form-item label="创建时间" >
-        <el-input v-model="form.createTime" style="width: 370px;"/>
-      </el-form-item>
-      <el-form-item label="更新时间" >
-        <el-input v-model="form.updateTime" style="width: 370px;"/>
+      <el-form-item label="待办内容" >
+        <el-input v-model="form.content" style="width: 370px;"/>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -31,7 +25,7 @@
 </template>
 
 <script>
-import { add, edit } from '@/api/documentReviewer'
+import { add, edit } from '@/api/todoList'
 export default {
   props: {
     isAdd: {
@@ -44,13 +38,14 @@ export default {
       loading: false, dialog: false,
       form: {
         id: '',
-        documentId: '',
-        userId: '',
-        userName: '',
-        sorted: '',
-        source: '',
+        todoAbstract: '',
+        expectedCompletionTime: '',
+        copyPersonName: '',
+        assistantName: '',
+        content: '',
         createTime: '',
-        updateTime: ''
+        updateTime: '',
+        deleted: ''
       },
       rules: {
       }
@@ -101,13 +96,14 @@ export default {
       this.$refs['form'].resetFields()
       this.form = {
         id: '',
-        documentId: '',
-        userId: '',
-        userName: '',
-        sorted: '',
-        source: '',
+        todoAbstract: '',
+        expectedCompletionTime: '',
+        copyPersonName: '',
+        assistantName: '',
+        content: '',
         createTime: '',
-        updateTime: ''
+        updateTime: '',
+        deleted: ''
       }
     }
   }

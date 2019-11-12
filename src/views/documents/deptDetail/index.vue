@@ -11,7 +11,7 @@
       <!-- 新增 -->
       <div style="display: inline-block;margin: 0px 2px;">
         <el-button
-          v-permission="['ADMIN','DOCUMENTREVIEWER_ALL','DOCUMENTREVIEWER_CREATE']"
+          v-permission="['ADMIN','DEPTDETAIL_ALL','DEPTDETAIL_CREATE']"
           class="filter-item"
           size="mini"
           type="primary"
@@ -23,20 +23,25 @@
     <eForm ref="form" :is-add="isAdd"/>
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%;">
-      <!-- <el-table-column prop="id" label="主键ID"/> -->
-      <el-table-column prop="userName" label="审核人"/>
-      <el-table-column prop="sorted" label="审核级数(从1开始)"/>
-      <el-table-column prop="source" label="来源（0:申请流程,1:报销流程）"/>
+      <el-table-column prop="id" label="id"/>
+      <el-table-column prop="deptId" label="部门id"/>
+      <el-table-column prop="attachment" label="图片等附件地址"/>
       <el-table-column prop="createTime" label="创建时间">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="checkPermission(['ADMIN','DOCUMENTREVIEWER_ALL','DOCUMENTREVIEWER_EDIT','DOCUMENTREVIEWER_DELETE'])" label="操作" width="150px" align="center">
+      <el-table-column prop="updateTime" label="更新时间">
         <template slot-scope="scope">
-          <el-button v-permission="['ADMIN','DOCUMENTREVIEWER_ALL','DOCUMENTREVIEWER_EDIT']" size="mini" type="primary" icon="el-icon-edit" @click="edit(scope.row)"/>
+          <span>{{ parseTime(scope.row.updateTime) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="deleted" label="删除位（0:未删除,1:已删除）"/>
+      <el-table-column v-if="checkPermission(['ADMIN','DEPTDETAIL_ALL','DEPTDETAIL_EDIT','DEPTDETAIL_DELETE'])" label="操作" width="150px" align="center">
+        <template slot-scope="scope">
+          <el-button v-permission="['ADMIN','DEPTDETAIL_ALL','DEPTDETAIL_EDIT']" size="mini" type="primary" icon="el-icon-edit" @click="edit(scope.row)"/>
           <el-popover
-            v-permission="['ADMIN','DOCUMENTREVIEWER_ALL','DOCUMENTREVIEWER_DELETE']"
+            v-permission="['ADMIN','DEPTDETAIL_ALL','DEPTDETAIL_DELETE']"
             :ref="scope.row.id"
             placement="top"
             width="180">
@@ -64,7 +69,7 @@
 <script>
 import checkPermission from '@/utils/permission'
 import initData from '@/mixins/initData'
-import { del } from '@/api/documentReviewer'
+import { del } from '@/api/deptDetail'
 import { parseTime } from '@/utils/index'
 import eForm from './form'
 export default {
@@ -74,11 +79,12 @@ export default {
     return {
       delLoading: false,
       queryTypeOptions: [
-        // { key: 'id', display_name: '主键ID' },
-        { key: 'userName', display_name: '审核人' },
-        { key: 'sorted', display_name: '审核级数' },
-        { key: 'source', display_name: '来源' },
-        { key: 'createTime', display_name: '创建时间' }
+        { key: 'id', display_name: 'id' },
+        { key: 'deptId', display_name: '部门id' },
+        { key: 'attachment', display_name: '图片等附件地址' },
+        { key: 'createTime', display_name: '创建时间' },
+        { key: 'updateTime', display_name: '更新时间' },
+        { key: 'deleted', display_name: '删除位（0:未删除,1:已删除）' }
       ]
     }
   },
@@ -91,10 +97,10 @@ export default {
     parseTime,
     checkPermission,
     beforeInit() {
-      this.url = 'api/documentReviewer'
+      this.url = 'api/deptDetail'
       const sort = 'id,desc'
-      this.source = '0'
-      this.params = { page: this.page, size: this.size, sort: sort, source: this.source }
+      const deleted = 0 
+      this.params = { page: this.page, size: this.size, sort: sort, deleted: deleted }
       const query = this.query
       const type = query.type
       const value = query.value
@@ -128,13 +134,11 @@ export default {
       const _this = this.$refs.form
       _this.form = {
         id: data.id,
-        documentId: data.documentId,
-        userId: data.userId,
-        userName: data.userName,
-        sorted: data.sorted,
-        source: data.source,
+        deptId: data.deptId,
+        attachment: data.attachment,
         createTime: data.createTime,
-        updateTime: data.updateTime
+        updateTime: data.updateTime,
+        deleted: data.deleted
       }
       _this.dialog = true
     }

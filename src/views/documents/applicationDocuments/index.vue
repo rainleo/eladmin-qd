@@ -7,6 +7,9 @@
       <el-select v-model="query.type" clearable placeholder="类型" class="filter-item" style="width: 130px">
         <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
+	   <el-select v-model="query.status" clearable placeholder="状态" class="filter-item" style="width: 90px" @change="toQuery">
+	     <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key"/>
+	   </el-select>
       <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="toQuery">搜索</el-button>
       <!-- 新增 -->
       <div style="display: inline-blockmargin: 0px 2px">
@@ -33,18 +36,28 @@
       <el-table-column prop="accountingSubjects.subjectName" label="申请事项" />
       <el-table-column prop="applicationDescription" label="事项描述" />
       <el-table-column prop="amount" label="金额" />
-      <el-table-column prop="reviewer" label="审核人" width="150px">
+      <el-table-column prop="reviewer" label="审核人" align="center">
         <template slot-scope="scope">
-          <el-popover width="220" trigger="hover">
+          <el-popover trigger="hover">
             <el-table :data="scope.row.reviewerList" size="small" style="width: 100%">
               <el-table-column prop="sorted" label="审批顺序" />
-              <el-table-column prop="userName" label="姓名" />
+              <el-table-column prop="user.username" label="审批人" />
+              <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态" align="center">
+                <template slot-scope="scope">
+                  <el-tag :type="scope.row.auditStatus ? 'success' : 'warning'">{{ scope.row.auditStatus ? '已审核' : '审核中' }}</el-tag>
+                </template>
+              </el-table-column>
             </el-table>
             <el-button slot="reference" size="mini" type="text">查看详情</el-button>
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column prop="createTime" label="创建时间">
+      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态" align="center">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.status ? 'success' : 'warning'">{{ scope.row.status ? '已审批' : '审批中' }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="createTime" label="创建时间" width="135px">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
@@ -95,13 +108,17 @@ export default {
       queryTypeOptions: [
         // { key: 'id', display_name: '主键ID' },
         { key: 'applicationNo', display_name: '单据号' },
-        { key: 'dept.name', display_name: '部门' },
-        { key: 'user.username', display_name: '申请人' },
-        { key: 'accountingSubjects.subjectName', display_name: '申请事项' },
+        { key: 'deptName', display_name: '部门' },
+        { key: 'userName', display_name: '申请人' },
+        { key: 'subjectName', display_name: '申请事项' },
         { key: 'applicationDescription', display_name: '事项描述' },
         { key: 'amount', display_name: '金额' }
         // { key: 'createTime', display_name: '创建时间' }
-      ]
+      ],
+	  statusTypeOptions: [
+	    { key: 1, display_name: '已审批' },
+	    { key: 0, display_name: '审批中' }
+	  ]
     }
   },
 
@@ -116,14 +133,17 @@ export default {
     beforeInit() {
       this.url = 'api/applicationDocuments'
       const sort = 'id,desc'
-      this.source = '0'
-      this.params = { page: this.page, size: this.size, sort: sort, source: this.source }
+      const source = 0
+      const deleted = 0
+      this.params = { page: this.page, size: this.size, sort: sort, source: source, deleted: deleted }
       const query = this.query
       const type = query.type
       const value = query.value
+      const status = query.status
       if (type && value) {
         this.params[type] = value
       }
+      if (status !== '' && status !== null) { this.params['status'] = status }
       return true
     },
     subDelete(id) {
@@ -156,6 +176,7 @@ export default {
       _this.form = {
         id: data.id,
         applicationNo: data.applicationNo,
+        status: data.status,
         deptName: data.dept.name,
         userName: data.user.username,
         sujectName: data.accountingSubjects.subjectName,

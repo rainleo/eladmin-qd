@@ -3,6 +3,7 @@
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
       <el-form-item label="部门"><el-input v-model="form.deptName" style="width: 370px;" /></el-form-item>
       <el-form-item label="报销人"><el-input v-model="form.userName" style="width: 370px;" /></el-form-item>
+      <el-form-item label="状态"><el-input v-model="form.status" style="width: 370px;" /></el-form-item>
       <el-form-item label="报销摘要"><el-input v-model="form.reimbursementAbstract" style="width: 370px;" /></el-form-item>
       <el-form-item label="报销金额"><el-input v-model="form.amount" style="width: 370px;" /></el-form-item>
       <el-form-item label="附件"><el-input v-model="form.attachment" style="width: 370px;" /></el-form-item>
@@ -30,6 +31,7 @@ export default {
       form: {
         id: '',
         reimbursementNo: '',
+        status: '',
         deptName: '',
         userName: '',
         reimbursementAbstract: '',
@@ -91,6 +93,7 @@ export default {
       this.form = {
         id: '',
         reimbursementNo: '',
+        status: '',
         deptName: '',
         userName: '',
         reimbursementAbstract: '',

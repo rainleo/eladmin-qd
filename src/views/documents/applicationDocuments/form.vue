@@ -22,7 +22,7 @@
           </el-select>
         </template>
       </el-form-item>
-
+      <el-form-item label="状态"><el-input v-model="form.status" style="width: 370px;" /></el-form-item>
       <el-form-item label="申请事项"><el-input v-model="form.sujectName" style="width: 370px;" /></el-form-item>
       <el-form-item label="事项描述"><el-input v-model="form.applicationDescription" style="width: 370px;" /></el-form-item>
       <el-form-item label="金额"><el-input v-model="form.amount" style="width: 370px;" /></el-form-item>
@@ -50,6 +50,7 @@ export default {
       form: {
         id: '',
         applicationNo: '',
+        status: '',
         deptName: '',
         userName: '',
         sujectName: '',
@@ -111,6 +112,7 @@ export default {
       this.form = {
         id: '',
         applicationNo: '',
+        status: '',
         deptName: '',
         userName: '',
         sujectName: '',

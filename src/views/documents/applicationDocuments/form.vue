@@ -22,7 +22,13 @@
           </el-select>
         </template>
       </el-form-item>
-      <el-form-item label="申请事项"><el-input v-model="form.sujectName" style="width: 370px;" /></el-form-item>
+      <el-form-item label="申请事项">
+        <template>
+          <el-select v-model="accountingSubjects.subjectName" placeholder="请选择" style="width: 370px;" filterable @focus="getSubjectName">
+            <el-option v-for="item in accountingSubjects" :key="item.id" :label="item.subjectName" :value="item.id" />
+          </el-select>
+        </template>
+      </el-form-item>
       <el-form-item label="事项描述"><el-input v-model="form.applicationDescription" style="width: 370px;" /></el-form-item>
       <el-form-item label="金额"><el-input v-model="form.amount" style="width: 370px;" /></el-form-item>
     </el-form>
@@ -34,7 +40,7 @@
 </template>
 
 <script>
-import { add, edit, getDeptName, getUserName } from '@/api/applicationDocuments'
+import { add, edit, getDeptName, getUserName, getSubjectName } from '@/api/applicationDocuments'
 export default {
   props: {
     isAdd: {
@@ -50,9 +56,9 @@ export default {
         id: '',
         applicationNo: '',
         status: '',
-        deptName: '',
-        userName: '',
-        sujectName: '',
+        deptId: '',
+        userId: '',
+        sujectId: '',
         applicationDescription: '',
         amount: '',
         createTime: '',
@@ -64,6 +70,9 @@ export default {
       },
       user: {
         username: ''
+      },
+      accountingSubjects: {
+        subjectName: ''
       },
       statusTypeOptions: [
         { key: 1, display_name: '已审批' },
@@ -81,6 +90,11 @@ export default {
     getUserName() {
       getUserName({ enabled: 1 }).then(res => {
         this.user = res.content
+      })
+    },
+    getSubjectName() {
+      getSubjectName({ deleted: 0 }).then(res => {
+        this.accountingSubjects = res.content
       })
     },
     cancel() {

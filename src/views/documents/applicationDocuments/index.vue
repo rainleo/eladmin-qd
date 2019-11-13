@@ -7,12 +7,12 @@
       <el-select v-model="query.type" clearable placeholder="类型" class="filter-item" style="width: 130px">
         <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
-	   <el-select v-model="query.status" clearable placeholder="状态" class="filter-item" style="width: 90px" @change="toQuery">
-	     <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key"/>
-	   </el-select>
+      <el-select v-model="query.status" clearable placeholder="状态" class="filter-item" style="width: 90px" @change="toQuery">
+        <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key"/>
+      </el-select>
       <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="toQuery">搜索</el-button>
       <!-- 新增 -->
-      <div style="display: inline-blockmargin: 0px 2px">
+      <div style="display: inline-blockmargin: 0px 2px;">
         <el-button
           v-permission="['ADMIN', 'APPLICATIONDOCUMENTS_ALL', 'APPLICATIONDOCUMENTS_CREATE']"
           class="filter-item"
@@ -29,8 +29,8 @@
     <eForm ref="form" :is-add="isAdd" />
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%">
-      <!-- <el-table-column prop="id" label="主键ID" /> -->
-      <el-table-column prop="applicationNo" label="单据号" />
+      <el-table-column prop="id" label="主键ID" />
+      <el-table-column prop="applicationNo" label="单据号" width="150px"/>
       <el-table-column prop="dept.name" label="部门" />
       <el-table-column prop="user.username" label="申请人" />
       <el-table-column prop="accountingSubjects.subjectName" label="申请事项" />
@@ -106,7 +106,7 @@ export default {
     return {
       delLoading: false,
       queryTypeOptions: [
-        // { key: 'id', display_name: '主键ID' },
+        { key: 'id', display_name: '主键ID' },
         { key: 'applicationNo', display_name: '单据号' },
         { key: 'deptName', display_name: '部门' },
         { key: 'userName', display_name: '申请人' },
@@ -133,9 +133,9 @@ export default {
     beforeInit() {
       this.url = 'api/applicationDocuments'
       const sort = 'id,desc'
-      const source = 0
+      // const source = 0
       const deleted = 0
-      this.params = { page: this.page, size: this.size, sort: sort, source: source, deleted: deleted }
+      this.params = { page: this.page, size: this.size, sort: sort, deleted: deleted }
       const query = this.query
       const type = query.type
       const value = query.value

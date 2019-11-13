@@ -83,7 +83,7 @@ export default {
     return {
       delLoading: false,
       queryTypeOptions: [
-        // { key: 'id', display_name: '自增主键ID' },
+        // { key: 'id', display_name: '主键ID' },
         { key: 'jobName', display_name: '岗位' }
       ],
       sortedTypeOptions: [

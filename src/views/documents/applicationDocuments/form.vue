@@ -3,26 +3,25 @@
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
       <el-form-item label="部门">
         <template>
-          <el-select v-model="form.deptName" placeholder="请选择" style="width: 370px;" filterable>
-            <el-option v-for="item in options" :key="item.form.deptName" :label="item.label" :value="item.form.deptName" />
+          <el-select v-model="dept.name" placeholder="请选择" style="width: 370px;" filterable @focus="getDeptName">
+            <el-option v-for="item in dept" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </template>
       </el-form-item>
       <el-form-item label="申请人">
         <template>
-          <el-select v-model="form.userName" placeholder="请选择" style="width: 370px;" filterable>
-            <el-option v-for="item in options" :key="item.form.userName" :label="item.label" :value="item.form.userName" />
+          <el-select v-model="user.username" placeholder="请选择" style="width: 370px;" filterable @focus="getUserName">
+            <el-option v-for="item in user" :key="item.id" :label="item.username" :value="item.id" />
           </el-select>
         </template>
       </el-form-item>
-      <el-form-item label="test">
+      <el-form-item label="状态">
         <template>
-          <el-select v-model="form.deptName" :remote-method="getDept" :loading="loading" multiple filterable remote reserve-keyword placeholder="请输入关键词">
-            <el-option v-for="item in options" :key="item.form.deptName" :label="item.label" :value="item.form.deptName" />
+          <el-select v-model="form.status" placeholder="请选择" style="width: 370px;" filterable>
+            <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </template>
       </el-form-item>
-      <el-form-item label="状态"><el-input v-model="form.status" style="width: 370px;" /></el-form-item>
       <el-form-item label="申请事项"><el-input v-model="form.sujectName" style="width: 370px;" /></el-form-item>
       <el-form-item label="事项描述"><el-input v-model="form.applicationDescription" style="width: 370px;" /></el-form-item>
       <el-form-item label="金额"><el-input v-model="form.amount" style="width: 370px;" /></el-form-item>
@@ -35,7 +34,7 @@
 </template>
 
 <script>
-import { add, edit } from '@/api/applicationDocuments'
+import { add, edit, getDeptName, getUserName } from '@/api/applicationDocuments'
 export default {
   props: {
     isAdd: {
@@ -59,10 +58,31 @@ export default {
         createTime: '',
         updatetime: ''
       },
-      rules: {}
+      rules: {},
+      dept: {
+        name: ''
+      },
+      user: {
+        username: ''
+      },
+      statusTypeOptions: [
+        { key: 1, display_name: '已审批' },
+        { key: 0, display_name: '审批中' }
+      ]
     }
   },
+
   methods: {
+    getDeptName() {
+      getDeptName({ enabled: 1 }).then(res => {
+        this.dept = res
+      })
+    },
+    getUserName() {
+      getUserName({ enabled: 1 }).then(res => {
+        this.user = res.content
+      })
+    },
     cancel() {
       this.resetForm()
     },

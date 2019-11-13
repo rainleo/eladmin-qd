@@ -29,7 +29,7 @@
     <eForm ref="form" :is-add="isAdd" />
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%;">
-      <!-- <el-table-column prop="id" label="主键ID"/> -->
+      <el-table-column prop="id" label="主键ID"/>
       <el-table-column prop="reimbursementNo" label="报销单号" />
       <el-table-column prop="dept.name" label="部门" />
       <el-table-column prop="user.username" label="报销人" />
@@ -112,7 +112,7 @@ export default {
     return {
       delLoading: false,
       queryTypeOptions: [
-        // { key: 'id', display_name: '主键ID' },
+        { key: 'id', display_name: '主键ID' },
         { key: 'reimbursementNo', display_name: '报销单号' },
         { key: 'deptName', display_name: '部门' },
         { key: 'userName', display_name: '报销人' },

@@ -8,7 +8,7 @@
         <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
       <el-select v-model="query.status" clearable placeholder="状态" class="filter-item" style="width: 90px" @change="toQuery">
-        <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key"/>
+        <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
       <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="toQuery">搜索</el-button>
       <!-- 新增 -->
@@ -30,7 +30,7 @@
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%">
       <el-table-column prop="id" label="主键ID" />
-      <el-table-column prop="applicationNo" label="单据号" width="150px"/>
+      <el-table-column prop="applicationNo" label="单据号" width="150px" />
       <el-table-column prop="dept.name" label="部门" />
       <el-table-column prop="user.username" label="申请人" />
       <el-table-column prop="accountingSubjects.subjectName" label="申请事项" />
@@ -97,6 +97,7 @@
 import checkPermission from '@/utils/permission'
 import initData from '@/mixins/initData'
 import { del } from '@/api/applicationDocuments'
+import { getDepts } from '@/api/dept'
 import { parseTime } from '@/utils/index'
 import eForm from './form'
 export default {
@@ -115,14 +116,12 @@ export default {
         { key: 'amount', display_name: '金额' }
         // { key: 'createTime', display_name: '创建时间' }
       ],
-	  statusTypeOptions: [
-	    { key: 1, display_name: '已审批' },
-	    { key: 0, display_name: '审批中' }
-	  ]
+      statusTypeOptions: [{ key: 1, display_name: '已审批' }, { key: 0, display_name: '审批中' }]
     }
   },
 
   created() {
+    this.getDeptDatas()
     this.$nextTick(() => {
       this.init()
     })
@@ -143,8 +142,20 @@ export default {
       if (type && value) {
         this.params[type] = value
       }
-      if (status !== '' && status !== null) { this.params['status'] = status }
+      if (status !== '' && status !== null) {
+        this.params['status'] = status
+      }
       return true
+    },
+    getDeptDatas() {
+      const sort = 'id,desc'
+      const params = { sort: sort }
+      if (this.deptName) {
+        params['name'] = this.deptName
+      }
+      getDepts(params).then(res => {
+        this.depts = res.content
+      })
     },
     subDelete(id) {
       this.delLoading = true
@@ -169,22 +180,26 @@ export default {
     add() {
       this.isAdd = true
       this.$refs.form.dialog = true
+      this.$refs.form.getDepts()
     },
     edit(data) {
       this.isAdd = false
       const _this = this.$refs.form
+      _this.getDepts()
       _this.form = {
         id: data.id,
         applicationNo: data.applicationNo,
         status: data.status,
-        deptName: data.dept.name,
-        userName: data.user.username,
-        sujectName: data.accountingSubjects.subjectName,
+        dept: { id: data.dept.id },
+        user: { id: data.user.id },
+        accountingSubjects: { id: data.accountingSubjects.id },
         applicationDescription: data.applicationDescription,
-        amount: data.amount,
-        createTime: data.createTime,
-        updatetime: data.updatetime
+        amount: data.amount
       }
+      _this.deptId = data.dept.id
+      _this.userId = data.user.id
+      _this.accountingSubjectsId = data.accountingSubjects.id
+      _this.getUsers(_this.deptId)
       _this.dialog = true
     }
   }

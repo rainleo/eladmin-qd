@@ -1,36 +1,34 @@
 <template>
   <el-dialog :append-to-body="true" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
-      <el-form-item label="部门">
-        <template>
-          <el-select v-model="dept.name" placeholder="请选择" style="width: 370px;" filterable @focus="getDeptName">
-            <el-option v-for="item in dept" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </template>
+      <el-form-item label="部门" prop="depts">
+        <treeselect v-model="deptId" :options="depts" style="width: 370px;" placeholder="选择部门" @select="selectFun" />
       </el-form-item>
-      <el-form-item label="申请人">
-        <template>
-          <el-select v-model="user.username" placeholder="请选择" style="width: 370px;" filterable @focus="getUserName">
-            <el-option v-for="item in user" :key="item.id" :label="item.username" :value="item.id" />
-          </el-select>
-        </template>
+      <el-form-item label="申请人" prop="users">
+        <el-select v-model="userId" style="width: 370px;" placeholder="请先选择部门">
+          <el-option
+            v-for="(item, index) in users"
+            :key="item.username + index"
+            :label="item.username"
+            :value="item.id"/>
+        </el-select>
       </el-form-item>
-      <el-form-item label="状态">
+      <el-form-item label="状态" prop="status">
         <template>
           <el-select v-model="form.status" placeholder="请选择" style="width: 370px;" filterable>
             <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </template>
       </el-form-item>
-      <el-form-item label="申请事项">
+      <el-form-item label="申请事项" prop="accountingSubjects">
         <template>
-          <el-select v-model="accountingSubjects.subjectName" placeholder="请选择" style="width: 370px;" filterable @focus="getSubjectName">
-            <el-option v-for="item in accountingSubjects" :key="item.id" :label="item.subjectName" :value="item.id" />
+          <el-select v-model="accountingSubjectsId" placeholder="请选择" style="width: 370px;" filterable @focus="getAccountingSubjects">
+            <el-option v-for="(item, index) in accountingSubjects" :key="item.subjectName + index" :label="item.subjectName" :value="item.id" />
           </el-select>
         </template>
       </el-form-item>
       <el-form-item label="事项描述"><el-input v-model="form.applicationDescription" style="width: 370px;" /></el-form-item>
-      <el-form-item label="金额"><el-input v-model="form.amount" style="width: 370px;" /></el-form-item>
+      <el-form-item label="金额" prop="amount"><el-input v-model="form.amount" style="width: 370px;" /></el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="text" @click="cancel">取消</el-button>
@@ -40,8 +38,14 @@
 </template>
 
 <script>
-import { add, edit, getDeptName, getUserName, getSubjectName } from '@/api/applicationDocuments'
+import { add, edit } from '@/api/applicationDocuments'
+import { getAccountingSubjects } from '@/api/accountingSubjects'
+import { getDepts } from '@/api/dept'
+import { getUsers } from '@/api/user'
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 export default {
+  components: { Treeselect },
   props: {
     isAdd: {
       type: Boolean,
@@ -49,51 +53,65 @@ export default {
     }
   },
   data() {
+    const validAmount = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入金额'))
+      } else if (!this.isvalidAmount(value)) {
+        callback(new Error('请输入正确的金额'))
+      } else {
+        callback()
+      }
+    }
     return {
-      loading: false,
-      dialog: false,
-      form: {
-        id: '',
-        applicationNo: '',
-        status: '',
-        deptId: '',
-        userId: '',
-        sujectId: '',
-        applicationDescription: '',
-        amount: '',
-        createTime: '',
-        updatetime: ''
-      },
-      rules: {},
-      dept: {
-        name: ''
-      },
-      user: {
-        username: ''
-      },
-      accountingSubjects: {
-        subjectName: ''
-      },
+        dialog: false,
+        loading: false,
+        form: {
+          status: '',
+          applicationDescription: '',
+          amount: ''
+          },
+        depts: [],
+        deptId: null,
+        userId: null,
+        users: [],
+        accountingSubjectsId: null,
+        accountingSubjects: [],
+        rules: {
+          deptId: [
+            { required: true, message: '部门不能为空', trigger: 'blur' }
+          ],
+          userId: [
+            { required: true, message: '用户不能为空', trigger: 'blur' }
+          ],
+          status: [
+            { required: true, message: '状态不能为空', trigger: 'blur' }
+          ],
+          accountingSubjectsId: [
+            { required: true, message: '事项不能为空', trigger: 'blur' }
+          ],
+          amount: [
+            { required: true, trigger: 'blur', validator: validAmount }
+          ]
+        },
       statusTypeOptions: [
         { key: 1, display_name: '已审批' },
         { key: 0, display_name: '审批中' }
       ]
     }
   },
-
   methods: {
-    getDeptName() {
-      getDeptName({ enabled: 1 }).then(res => {
-        this.dept = res
+   getDepts() {
+     getDepts({ enabled: true }).then(res => {
+       this.depts = res.content
+     })
+   },
+    getUsers() {
+      getUsers({ enabled: 1 }).then(res => {
+        this.users = res.content
       })
     },
-    getUserName() {
-      getUserName({ enabled: 1 }).then(res => {
-        this.user = res.content
-      })
-    },
-    getSubjectName() {
-      getSubjectName({ deleted: 0 }).then(res => {
+    getAccountingSubjects() {
+      getAccountingSubjects({ deleted: 0 }).then(res => {
         this.accountingSubjects = res.content
       })
     },
@@ -101,10 +119,49 @@ export default {
       this.resetForm()
     },
     doSubmit() {
-      this.loading = true
-      if (this.isAdd) {
-        this.doAdd()
-      } else this.doEdit()
+      this.form.deptId = this.deptId
+      this.form.userId = this.userId
+      this.form.accountingSubjectsId = this.accountingSubjectsId
+      this.form.user = null
+      this.form.dept = null
+      this.form.accountingSubjects = null
+      this.$refs['form'].validate((valid) => {
+        if (valid) {
+          if (this.deptId === null || this.deptId === undefined) {
+            this.$message({
+              message: '部门不能为空',
+              type: 'warning'
+            })
+          } else if (this.userId === null || this.userId === undefined) {
+            this.$message({
+              message: '申请人不能为空',
+              type: 'warning'
+            })
+          } else if (this.form.status === null || this.form.status === undefined) {
+            this.$message({
+              message: '状态不能为空',
+              type: 'warning'
+            })
+          } else if (this.accountingSubjectsId === null || this.accountingSubjectsId === undefined) {
+            this.$message({
+              message: '事项不能为空',
+              type: 'warning'
+            })
+          }  else if (this.form.amount === null || this.form.amount === "") {
+            this.$message({
+              message: '金额不能为空',
+              type: 'warning'
+            })
+          } else {
+            this.loading = true
+            if (this.isAdd) {
+              this.doAdd()
+            } else this.doEdit()
+          }
+        } else {
+          return false
+        }
+      })
     },
     doAdd() {
       add(this.form)
@@ -143,19 +200,53 @@ export default {
     resetForm() {
       this.dialog = false
       this.$refs['form'].resetFields()
+      this.deptId = null
+      this.userId = null
+      this.accountingSubjectsId = []
       this.form = {
-        id: '',
-        applicationNo: '',
         status: '',
-        deptName: '',
-        userName: '',
-        sujectName: '',
+        dept: {
+          id: ''
+        },
+        user: {
+          id: ''
+        },
+        accountingSubjects: {
+          id: ''
+        },
         applicationDescription: '',
-        amount: '',
-        createTime: '',
-        updatetime: ''
+        amount: null
       }
-    }
+    },
+    getAccountingSubjects() {
+      getAccountingSubjects({ deleted: 0 }).then(res => {
+        this.accountingSubjects = res.content
+      }).catch(err => {
+        console.log(err.response.data.message)
+      })
+    },
+    getUsers(id) {
+      getUsers({
+        deptId: this.id,
+        enabled: true
+      }).then(res => {
+        this.users = res.content
+      }).catch(err => {
+        console.log(err.response.data.message)
+      })
+    },
+    getDepts() {
+      getDepts({ enabled: true }).then(res => {
+        this.depts = res.content
+      })
+    },
+    isvalidAmount(str) {
+      const reg = /(^[1-9](\d+)?(\.\d{1,2})?$)|(^0$)|(^\d\.\d{1,2}$)/
+      return reg.test(str)
+    },
+    selectFun(node, instanceId) {
+      this.getUsers(node.id)
+    },
   }
 }
 </script>

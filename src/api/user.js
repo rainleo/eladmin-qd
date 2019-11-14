@@ -43,3 +43,11 @@ export function updateEmail(code, data) {
   })
 }
 
+// 根据deptId获取所有的AccountingSubjects
+export function getUsers(params) {
+  return request({
+    url: 'api/users',
+    method: 'get',
+    params
+  })
+}

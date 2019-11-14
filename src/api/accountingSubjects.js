@@ -22,3 +22,12 @@ export function edit(data) {
     data
   })
 }
+
+// 获取所有的AccountingSubjects
+export function getAccountingSubjects(params) {
+  return request({
+    url: 'api/accountingSubjects',
+    method: 'get',
+    params
+  })
+}

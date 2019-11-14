@@ -22,17 +22,3 @@ export function edit(data) {
     data
   })
 }
-export function getUserName(params) {
-  return request({
-    url: 'api/users',
-    method: 'get',
-    params
-  })
-}
-export function getDeptName(params) {
-  return request({
-    url: 'api/deptNormal',
-    method: 'get',
-    params
-  })
-}

@@ -1,16 +1,10 @@
 <template>
   <el-dialog :append-to-body="true" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
-      <el-form-item label="部门" prop="depts">
-        <treeselect v-model="deptId" :options="depts" style="width: 370px;" placeholder="选择部门" @select="selectFun" />
-      </el-form-item>
+      <el-form-item label="部门" prop="depts"><treeselect v-model="deptId" :options="depts" style="width: 370px;" placeholder="选择部门" @select="selectFun" /></el-form-item>
       <el-form-item label="申请人" prop="users">
         <el-select v-model="userId" style="width: 370px;" placeholder="请先选择部门">
-          <el-option
-            v-for="(item, index) in users"
-            :key="item.username + index"
-            :label="item.username"
-            :value="item.id"/>
+          <el-option v-for="(item, index) in users" :key="item.username + index" :label="item.username" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="状态" prop="status">
@@ -27,8 +21,8 @@
           </el-select>
         </template>
       </el-form-item>
-      <el-form-item label="事项描述"><el-input v-model="form.applicationDescription" style="width: 370px;" /></el-form-item>
-      <el-form-item label="金额" prop="amount"><el-input v-model="form.amount" style="width: 370px;" /></el-form-item>
+      <el-form-item label="事项描述"><el-input v-model.trim="form.applicationDescription" style="width: 370px;" /></el-form-item>
+      <el-form-item label="金额" prop="amount"><el-input v-model.number="form.amount" style="width: 370px;" /></el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="text" @click="cancel">取消</el-button>
@@ -63,58 +57,30 @@ export default {
       }
     }
     return {
-        dialog: false,
-        loading: false,
-        form: {
-          status: '',
-          applicationDescription: '',
-          amount: ''
-          },
-        depts: [],
-        deptId: null,
-        userId: null,
-        users: [],
-        accountingSubjectsId: null,
-        accountingSubjects: [],
-        rules: {
-          deptId: [
-            { required: true, message: '部门不能为空', trigger: 'blur' }
-          ],
-          userId: [
-            { required: true, message: '用户不能为空', trigger: 'blur' }
-          ],
-          status: [
-            { required: true, message: '状态不能为空', trigger: 'blur' }
-          ],
-          accountingSubjectsId: [
-            { required: true, message: '事项不能为空', trigger: 'blur' }
-          ],
-          amount: [
-            { required: true, trigger: 'blur', validator: validAmount }
-          ]
-        },
-      statusTypeOptions: [
-        { key: 1, display_name: '已审批' },
-        { key: 0, display_name: '审批中' }
-      ]
+      dialog: false,
+      loading: false,
+      form: {
+        status: '',
+        applicationDescription: '',
+        amount: ''
+      },
+      depts: [],
+      deptId: null,
+      userId: null,
+      users: [],
+      accountingSubjectsId: null,
+      accountingSubjects: [],
+      rules: {
+        deptId: [{ required: true, message: '部门不能为空', trigger: 'blur' }],
+        userId: [{ required: true, message: '用户不能为空', trigger: 'blur' }],
+        status: [{ required: true, message: '状态不能为空', trigger: 'blur' }],
+        accountingSubjectsId: [{ required: true, message: '事项不能为空', trigger: 'blur' }],
+        amount: [{ required: true, trigger: 'blur', validator: validAmount }]
+      },
+      statusTypeOptions: [{ key: 1, display_name: '已审批' }, { key: 0, display_name: '审批中' }]
     }
   },
   methods: {
-   getDepts() {
-     getDepts({ enabled: true }).then(res => {
-       this.depts = res.content
-     })
-   },
-    getUsers() {
-      getUsers({ enabled: 1 }).then(res => {
-        this.users = res.content
-      })
-    },
-    getAccountingSubjects() {
-      getAccountingSubjects({ deleted: 0 }).then(res => {
-        this.accountingSubjects = res.content
-      })
-    },
     cancel() {
       this.resetForm()
     },
@@ -125,7 +91,7 @@ export default {
       this.form.user = null
       this.form.dept = null
       this.form.accountingSubjects = null
-      this.$refs['form'].validate((valid) => {
+      this.$refs['form'].validate(valid => {
         if (valid) {
           if (this.deptId === null || this.deptId === undefined) {
             this.$message({
@@ -147,7 +113,7 @@ export default {
               message: '事项不能为空',
               type: 'warning'
             })
-          }  else if (this.form.amount === null || this.form.amount === "") {
+          } else if (this.form.amount === null || this.form.amount === '') {
             this.$message({
               message: '金额不能为空',
               type: 'warning'
@@ -219,21 +185,25 @@ export default {
       }
     },
     getAccountingSubjects() {
-      getAccountingSubjects({ deleted: 0 }).then(res => {
-        this.accountingSubjects = res.content
-      }).catch(err => {
-        console.log(err.response.data.message)
-      })
+      getAccountingSubjects({ deleted: 0 })
+        .then(res => {
+          this.accountingSubjects = res.content
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
     },
     getUsers(id) {
       getUsers({
         deptId: this.id,
         enabled: true
-      }).then(res => {
-        this.users = res.content
-      }).catch(err => {
-        console.log(err.response.data.message)
       })
+        .then(res => {
+          this.users = res.content
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
     },
     getDepts() {
       getDepts({ enabled: true }).then(res => {
@@ -246,7 +216,7 @@ export default {
     },
     selectFun(node, instanceId) {
       this.getUsers(node.id)
-    },
+    }
   }
 }
 </script>

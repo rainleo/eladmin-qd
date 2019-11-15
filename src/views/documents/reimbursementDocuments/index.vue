@@ -29,20 +29,20 @@
     <eForm ref="form" :is-add="isAdd" />
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%;">
-      <el-table-column prop="id" label="主键ID"/>
-      <el-table-column prop="reimbursementNo" label="报销单号" />
+      <el-table-column prop="id" label="主键ID" width="60px"/>
+      <el-table-column prop="reimbursementNo" label="单据号" width="150px"/>
       <el-table-column prop="dept.name" label="部门" />
       <el-table-column prop="user.username" label="报销人" />
       <el-table-column prop="reimbursementAbstract" label="报销摘要" />
       <el-table-column prop="amount" label="报销金额" />
       <el-table-column prop="attachment" label="附件" />
-      <el-table-column prop="reviewer" label="审核人" width="150px">
+      <el-table-column prop="reviewer" label="审批人" align="center">
         <template slot-scope="scope">
           <el-popover trigger="hover">
             <el-table :data="scope.row.reviewerList" size="small" style="width: 100%">
               <el-table-column prop="sorted" label="审批顺序" />
               <el-table-column prop="user.username" label="审批人" />
-              <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态" align="center">
+              <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态" >
                 <template slot-scope="scope">
                   <el-tag :type="scope.row.auditStatus ? 'success' : 'warning'">{{ scope.row.auditStatus ? '已审批' : '审批中' }}</el-tag>
                 </template>
@@ -52,7 +52,7 @@
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态" align="center">
+      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态" >
         <template slot-scope="scope">
           <el-tag :type="scope.row.status ? 'success' : 'warning'">{{ scope.row.status ? '已审批' : '审批中' }}</el-tag>
         </template>
@@ -103,6 +103,7 @@
 import checkPermission from '@/utils/permission'
 import initData from '@/mixins/initData'
 import { del } from '@/api/reimbursementDocuments'
+import { getDepts } from '@/api/dept'
 import { parseTime } from '@/utils/index'
 import eForm from './form'
 export default {
@@ -127,6 +128,7 @@ export default {
     }
   },
   created() {
+    this.getDeptDatas()
     this.$nextTick(() => {
       this.init()
     })
@@ -137,9 +139,8 @@ export default {
     beforeInit() {
       this.url = 'api/reimbursementDocuments'
       const sort = 'id,desc'
-      const source = 1
       const deleted = 0
-      this.params = { page: this.page, size: this.size, sort: sort, source: source, deleted: deleted }
+      this.params = { page: this.page, size: this.size, sort: sort, deleted: deleted }
       const query = this.query
       const type = query.type
       const value = query.value
@@ -149,6 +150,16 @@ export default {
       }
       if (status !== '' && status !== null) { this.params['status'] = status }
       return true
+    },
+    getDeptDatas() {
+      const sort = 'id,desc'
+      const params = { sort: sort }
+      if (this.deptName) {
+        params['name'] = this.deptName
+      }
+      getDepts(params).then(res => {
+        this.depts = res.content
+      })
     },
     subDelete(id) {
       this.delLoading = true
@@ -173,6 +184,7 @@ export default {
     add() {
       this.isAdd = true
       this.$refs.form.dialog = true
+      this.$refs.form.getDepts()
     },
     edit(data) {
       this.isAdd = false
@@ -181,14 +193,15 @@ export default {
         id: data.id,
         reimbursementNo: data.reimbursementNo,
         status: data.status,
-        deptName: data.dept.name,
-        userName: data.user.username,
+        dept: { id: data.dept.id },
+        user: { id: data.user.id },
         reimbursementAbstract: data.reimbursementAbstract,
         amount: data.amount,
-        attachment: data.attachment,
-        createTime: data.createTime,
-        updatetime: data.updatetime
+        attachment: data.attachment
       }
+      _this.deptId = data.dept.id
+      _this.userId = data.user.id
+      _this.getUsers(_this.deptId)
       _this.dialog = true
     }
   }

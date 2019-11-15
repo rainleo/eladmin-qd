@@ -71,10 +71,7 @@ export default {
       accountingSubjectsId: null,
       accountingSubjects: [],
       rules: {
-        deptId: [{ required: true, message: '部门不能为空', trigger: 'blur' }],
-        userId: [{ required: true, message: '用户不能为空', trigger: 'blur' }],
         status: [{ required: true, message: '状态不能为空', trigger: 'blur' }],
-        accountingSubjectsId: [{ required: true, message: '事项不能为空', trigger: 'blur' }],
         amount: [{ required: true, trigger: 'blur', validator: validAmount }]
       },
       statusTypeOptions: [{ key: 1, display_name: '已审批' }, { key: 0, display_name: '审批中' }]
@@ -103,19 +100,9 @@ export default {
               message: '申请人不能为空',
               type: 'warning'
             })
-          } else if (this.form.status === null || this.form.status === undefined) {
-            this.$message({
-              message: '状态不能为空',
-              type: 'warning'
-            })
           } else if (this.accountingSubjectsId === null || this.accountingSubjectsId === undefined) {
             this.$message({
               message: '事项不能为空',
-              type: 'warning'
-            })
-          } else if (this.form.amount === null || this.form.amount === '') {
-            this.$message({
-              message: '金额不能为空',
               type: 'warning'
             })
           } else {

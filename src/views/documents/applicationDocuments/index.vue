@@ -29,22 +29,22 @@
     <eForm ref="form" :is-add="isAdd" />
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%">
-      <el-table-column prop="id" label="主键ID" />
-      <el-table-column prop="applicationNo" label="单据号" width="150px" />
+      <el-table-column prop="id" label="主键ID" width="60px"/>
+      <el-table-column prop="applicationNo" label="申请单号" width="150px" />
       <el-table-column prop="dept.name" label="部门" />
       <el-table-column prop="user.username" label="申请人" />
       <el-table-column prop="accountingSubjects.subjectName" label="申请事项" />
       <el-table-column prop="applicationDescription" label="事项描述" />
-      <el-table-column prop="amount" label="金额" />
-      <el-table-column prop="reviewer" label="审核人" align="center">
+      <el-table-column prop="amount" label="申请金额" />
+      <el-table-column prop="reviewer" label="审批人" align="center">
         <template slot-scope="scope">
           <el-popover trigger="hover">
             <el-table :data="scope.row.reviewerList" size="small" style="width: 100%">
               <el-table-column prop="sorted" label="审批顺序" />
               <el-table-column prop="user.username" label="审批人" />
-              <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态" align="center">
+              <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态" >
                 <template slot-scope="scope">
-                  <el-tag :type="scope.row.auditStatus ? 'success' : 'warning'">{{ scope.row.auditStatus ? '已审核' : '审核中' }}</el-tag>
+                  <el-tag :type="scope.row.auditStatus ? 'success' : 'warning'">{{ scope.row.auditStatus ? '已审批' : '审批中' }}</el-tag>
                 </template>
               </el-table-column>
             </el-table>
@@ -52,7 +52,7 @@
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态" align="center">
+      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态" >
         <template slot-scope="scope">
           <el-tag :type="scope.row.status ? 'success' : 'warning'">{{ scope.row.status ? '已审批' : '审批中' }}</el-tag>
         </template>
@@ -108,12 +108,12 @@ export default {
       delLoading: false,
       queryTypeOptions: [
         { key: 'id', display_name: '主键ID' },
-        { key: 'applicationNo', display_name: '单据号' },
+        { key: 'applicationNo', display_name: '申请单号' },
         { key: 'deptName', display_name: '部门' },
         { key: 'userName', display_name: '申请人' },
         { key: 'subjectName', display_name: '申请事项' },
         { key: 'applicationDescription', display_name: '事项描述' },
-        { key: 'amount', display_name: '金额' }
+        { key: 'amount', display_name: '申请金额' }
         // { key: 'createTime', display_name: '创建时间' }
       ],
       statusTypeOptions: [{ key: 1, display_name: '已审批' }, { key: 0, display_name: '审批中' }]
@@ -132,7 +132,6 @@ export default {
     beforeInit() {
       this.url = 'api/applicationDocuments'
       const sort = 'id,desc'
-      // const source = 0
       const deleted = 0
       this.params = { page: this.page, size: this.size, sort: sort, deleted: deleted }
       const query = this.query

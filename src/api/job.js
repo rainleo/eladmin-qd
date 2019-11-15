@@ -35,3 +35,12 @@ export function edit(data) {
     data
   })
 }
+
+// 获取所有的Jobs
+export function getJobs(params) {
+  return request({
+    url: 'api/job',
+    method: 'get',
+    params
+  })
+}

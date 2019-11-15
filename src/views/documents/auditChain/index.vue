@@ -97,7 +97,7 @@ export default {
       sourceTypeOptions: [
         { key: 0, display_name: '申请流程' },
         { key: 1, display_name: '报销流程' }
-	      ]
+      ]
     }
   },
   created() {
@@ -150,14 +150,14 @@ export default {
       const _this = this.$refs.form
       _this.form = {
         id: data.id,
-        jobId: data.jobId,
-        jobName: data.job.name,
+        job: { id: data.job.id },
         sorted: data.sorted,
         source: data.source,
         createTime: data.createTime,
         updateTime: data.updateTime,
         deleted: data.deleted
       }
+      _this.jobId = data.job.id
       _this.dialog = true
     }
   }

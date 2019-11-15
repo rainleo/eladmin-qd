@@ -1,29 +1,20 @@
 <template>
   <el-dialog :append-to-body="true" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
-      <el-form-item label="单据id,来自application_documents.id或reimbursement_documents.id" >
-        <el-input v-model="form.documentId" style="width: 370px;"/>
+      <el-form-item label="单据ID" >
+        <el-input v-model.number="form.documentId" style="width: 370px;"/>
       </el-form-item>
-      <el-form-item label="申请（报销）人，来自user.id" >
+      <el-form-item label="审批人" >
         <el-input v-model="form.userId" style="width: 370px;"/>
       </el-form-item>
-      <el-form-item label="审核级数，从1开始" >
-        <el-input v-model="form.sorted" style="width: 370px;"/>
+      <el-form-item label="审核顺序" >
+        <el-input v-model.number="form.sorted" style="width: 370px;"/>
       </el-form-item>
-      <el-form-item label="审核状态(0:审核中,1:已审核)" >
+      <el-form-item label="审核状态" >
         <el-input v-model="form.auditStatus" style="width: 370px;"/>
       </el-form-item>
-      <el-form-item label="来源（0:申请流程,1:报销流程）" >
+      <el-form-item label="单据来源" >
         <el-input v-model="form.source" style="width: 370px;"/>
-      </el-form-item>
-      <el-form-item label="创建时间" >
-        <el-input v-model="form.createTime" style="width: 370px;"/>
-      </el-form-item>
-      <el-form-item label="更新时间" >
-        <el-input v-model="form.updateTime" style="width: 370px;"/>
-      </el-form-item>
-      <el-form-item label="删除位（0:未删除,1:已删除）" >
-        <el-input v-model="form.deleted" style="width: 370px;"/>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">

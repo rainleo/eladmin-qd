@@ -1,21 +1,11 @@
 <template>
   <el-dialog :append-to-body="true" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
-      <el-form-item label="单据ID" >
-        <el-input v-model.number="form.documentId" style="width: 370px;"/>
-      </el-form-item>
-      <el-form-item label="审批人" >
-        <el-input v-model="form.userId" style="width: 370px;"/>
-      </el-form-item>
-      <el-form-item label="审核顺序" >
-        <el-input v-model.number="form.sorted" style="width: 370px;"/>
-      </el-form-item>
-      <el-form-item label="审核状态" >
-        <el-input v-model="form.auditStatus" style="width: 370px;"/>
-      </el-form-item>
-      <el-form-item label="单据来源" >
-        <el-input v-model="form.source" style="width: 370px;"/>
-      </el-form-item>
+      <el-form-item label="单据ID"><el-input v-model.number="form.documentId" style="width: 370px;" /></el-form-item>
+      <el-form-item label="审批人"><el-input v-model="form.userId" style="width: 370px;" /></el-form-item>
+      <el-form-item label="审核顺序"><el-input v-model.number="form.sorted" style="width: 370px;" /></el-form-item>
+      <el-form-item label="审核状态"><el-input v-model="form.auditStatus" style="width: 370px;" /></el-form-item>
+      <el-form-item label="单据来源"><el-input v-model="form.source" style="width: 370px;" /></el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="text" @click="cancel">取消</el-button>
@@ -35,7 +25,8 @@ export default {
   },
   data() {
     return {
-      loading: false, dialog: false,
+      loading: false,
+      dialog: false,
       form: {
         id: '',
         documentId: '',
@@ -47,8 +38,7 @@ export default {
         updateTime: '',
         deleted: ''
       },
-      rules: {
-      }
+      rules: {}
     }
   },
   methods: {
@@ -62,34 +52,38 @@ export default {
       } else this.doEdit()
     },
     doAdd() {
-      add(this.form).then(res => {
-        this.resetForm()
-        this.$notify({
-          title: '添加成功',
-          type: 'success',
-          duration: 2500
+      add(this.form)
+        .then(res => {
+          this.resetForm()
+          this.$notify({
+            title: '添加成功',
+            type: 'success',
+            duration: 2500
+          })
+          this.loading = false
+          this.$parent.init()
         })
-        this.loading = false
-        this.$parent.init()
-      }).catch(err => {
-        this.loading = false
-        console.log(err.response.data.message)
-      })
+        .catch(err => {
+          this.loading = false
+          console.log(err.response.data.message)
+        })
     },
     doEdit() {
-      edit(this.form).then(res => {
-        this.resetForm()
-        this.$notify({
-          title: '修改成功',
-          type: 'success',
-          duration: 2500
+      edit(this.form)
+        .then(res => {
+          this.resetForm()
+          this.$notify({
+            title: '修改成功',
+            type: 'success',
+            duration: 2500
+          })
+          this.loading = false
+          this.$parent.init()
         })
-        this.loading = false
-        this.$parent.init()
-      }).catch(err => {
-        this.loading = false
-        console.log(err.response.data.message)
-      })
+        .catch(err => {
+          this.loading = false
+          console.log(err.response.data.message)
+        })
     },
     resetForm() {
       this.dialog = false
@@ -110,6 +104,4 @@ export default {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

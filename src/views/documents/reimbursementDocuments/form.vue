@@ -16,7 +16,14 @@
       </el-form-item>
       <el-form-item label="报销摘要" prop="reimbursementAbstract"><el-input v-model.trim="form.reimbursementAbstract" style="width: 370px;" /></el-form-item>
       <el-form-item label="报销金额" prop="amount"><el-input v-model.number="form.amount" style="width: 370px;" /></el-form-item>
-      <el-form-item label="附件" prop="attachment"><el-input v-model="form.attachment" style="width: 370px;" /></el-form-item>
+      <el-form-item label="附件" prop="attachment">
+        <el-input v-model="form.attachment" style="width: 370px;" />
+
+        <!-- 上传 -->
+        <div style="display: inline-block;margin: 0px 2px;">
+          <el-button class="filter-item" size="mini" type="primary" icon="el-icon-upload" @click="dialog = true">上传文件</el-button>
+        </div>
+      </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="text" @click="cancel">取消</el-button>

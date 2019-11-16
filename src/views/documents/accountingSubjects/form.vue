@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { add, edit } from '@/api/accountingSubjects';
+import { add, edit } from '@/api/accountingSubjects'
 export default {
   props: {
     isAdd: {
@@ -41,61 +41,61 @@ export default {
         auxiliaryAccountType: [{ required: true, message: '辅助账类型不能为空', trigger: 'blur' }],
         itemDetails: [{ required: true, message: '辅助核算项目明细不能为空', trigger: 'blur' }]
       }
-    };
+    }
   },
   methods: {
     cancel() {
-      this.resetForm();
+      this.resetForm()
     },
     doSubmit() {
       this.$refs['form'].validate(valid => {
         if (valid) {
-          this.loading = true;
+          this.loading = true
           if (this.isAdd) {
-            this.doAdd();
-          } else this.doEdit();
+            this.doAdd()
+          } else this.doEdit()
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     doAdd() {
       add(this.form)
         .then(res => {
-          this.resetForm();
+          this.resetForm()
           this.$notify({
             title: '添加成功',
             type: 'success',
             duration: 2500
-          });
-          this.loading = false;
-          this.$parent.init();
+          })
+          this.loading = false
+          this.$parent.init()
         })
         .catch(err => {
-          this.loading = false;
-          console.log(err.response.data.message);
-        });
+          this.loading = false
+          console.log(err.response.data.message)
+        })
     },
     doEdit() {
       edit(this.form)
         .then(res => {
-          this.resetForm();
+          this.resetForm()
           this.$notify({
             title: '修改成功',
             type: 'success',
             duration: 2500
-          });
-          this.loading = false;
-          this.$parent.init();
+          })
+          this.loading = false
+          this.$parent.init()
         })
         .catch(err => {
-          this.loading = false;
-          console.log(err.response.data.message);
-        });
+          this.loading = false
+          console.log(err.response.data.message)
+        })
     },
     resetForm() {
-      this.dialog = false;
-      this.$refs['form'].resetFields();
+      this.dialog = false
+      this.$refs['form'].resetFields()
       this.form = {
         id: '',
         subjectCode: '',
@@ -104,10 +104,10 @@ export default {
         itemDetails: '',
         createTime: '',
         updatetime: ''
-      };
+      }
     }
   }
-};
+}
 </script>
 
 <style scoped></style>

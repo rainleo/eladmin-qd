@@ -29,7 +29,7 @@
     <eForm ref="form" :is-add="isAdd" />
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%">
-      <el-table-column prop="id" label="主键ID" width="60px"/>
+      <el-table-column prop="id" label="主键ID" width="60px" />
       <el-table-column prop="applicationNo" label="申请单号" width="150px" />
       <el-table-column prop="dept.name" label="部门" />
       <el-table-column prop="user.username" label="申请人" />
@@ -42,7 +42,7 @@
             <el-table :data="scope.row.reviewerList" size="small" style="width: 100%">
               <el-table-column prop="sorted" label="审批顺序" />
               <el-table-column prop="user.username" label="审批人" />
-              <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态" >
+              <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态">
                 <template slot-scope="scope">
                   <el-tag :type="scope.row.auditStatus ? 'success' : 'warning'">{{ scope.row.auditStatus ? '已审批' : '审批中' }}</el-tag>
                 </template>
@@ -52,7 +52,7 @@
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态" >
+      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status ? 'success' : 'warning'">{{ scope.row.status ? '已审批' : '审批中' }}</el-tag>
         </template>

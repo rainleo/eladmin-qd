@@ -8,7 +8,7 @@
         <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
       <el-select v-model="query.status" clearable placeholder="状态" class="filter-item" style="width: 90px" @change="toQuery">
-        <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key"/>
+        <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
       <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="toQuery">搜索</el-button>
       <!-- 新增 -->
@@ -29,20 +29,27 @@
     <eForm ref="form" :is-add="isAdd" />
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%;">
-      <el-table-column prop="id" label="主键ID" width="60px"/>
-      <el-table-column prop="reimbursementNo" label="单据号" width="150px"/>
+      <el-table-column prop="id" label="主键ID" width="60px" />
+      <el-table-column prop="reimbursementNo" label="单据号" width="150px" />
       <el-table-column prop="dept.name" label="部门" />
       <el-table-column prop="user.username" label="报销人" />
       <el-table-column prop="reimbursementAbstract" label="报销摘要" />
       <el-table-column prop="amount" label="报销金额" />
-      <el-table-column prop="attachment" label="附件" />
+      <el-table-column prop="attachment" label="附件" width="180px">
+        <!-- <template slot-scope="scope">
+        <img :src="attachment" min-width="70" height="70" />
+      </template> -->
+        <template slot-scope="scope">
+          <image :src="scope.row.attachment" width="100" height="100" />
+        </template>
+      </el-table-column>
       <el-table-column prop="reviewer" label="审批人" align="center">
         <template slot-scope="scope">
           <el-popover trigger="hover">
             <el-table :data="scope.row.reviewerList" size="small" style="width: 100%">
               <el-table-column prop="sorted" label="审批顺序" />
               <el-table-column prop="user.username" label="审批人" />
-              <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态" >
+              <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态">
                 <template slot-scope="scope">
                   <el-tag :type="scope.row.auditStatus ? 'success' : 'warning'">{{ scope.row.auditStatus ? '已审批' : '审批中' }}</el-tag>
                 </template>
@@ -52,7 +59,7 @@
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态" >
+      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status ? 'success' : 'warning'">{{ scope.row.status ? '已审批' : '审批中' }}</el-tag>
         </template>
@@ -121,10 +128,7 @@ export default {
         { key: 'amount', display_name: '报销金额' }
         // { key: 'createTime', display_name: '创建时间' },
       ],
-      statusTypeOptions: [
-        { key: 1, display_name: '已审批' },
-        { key: 0, display_name: '审批中' }
-      ]
+      statusTypeOptions: [{ key: 1, display_name: '已审批' }, { key: 0, display_name: '审批中' }]
     }
   },
   created() {
@@ -148,7 +152,9 @@ export default {
       if (type && value) {
         this.params[type] = value
       }
-      if (status !== '' && status !== null) { this.params['status'] = status }
+      if (status !== '' && status !== null) {
+        this.params['status'] = status
+      }
       return true
     },
     getDeptDatas() {

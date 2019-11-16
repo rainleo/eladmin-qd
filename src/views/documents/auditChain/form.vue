@@ -10,14 +10,14 @@
       </el-form-item>
       <el-form-item label="审批级别" prop="sorted">
         <template>
-          <el-select v-model="form.sorted" clearable placeholder="审批级别" class="filter-item" style="width: 370px;" @change="toQuery">
+          <el-select v-model="form.sorted" clearable placeholder="审批级别" class="filter-item" style="width: 370px;">
             <el-option v-for="item in sortedTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </template>
       </el-form-item>
       <el-form-item label="审批范围" prop="source">
         <template>
-          <el-select v-model="form.source" clearable placeholder="审批范围" class="filter-item" style="width: 370px;" @change="toQuery">
+          <el-select v-model="form.source" clearable placeholder="审批范围" class="filter-item" style="width: 370px;">
             <el-option v-for="item in sourceTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </template>
@@ -31,8 +31,8 @@
 </template>
 
 <script>
-import { add, edit } from '@/api/auditChain';
-import { getJobs } from '@/api/job';
+import { add, edit } from '@/api/auditChain'
+import { getJobs } from '@/api/job'
 export default {
   props: {
     isAdd: {
@@ -67,12 +67,12 @@ export default {
       rules: {
         sorted: [{ required: true, message: '审批级别不能为空', trigger: 'blur' }],
         source: [{ required: true, message: '审批范围不能为空', trigger: 'blur' }]
-      },
-    };
+      }
+    }
   },
   methods: {
     cancel() {
-      this.resetForm();
+      this.resetForm()
     },
     doSubmit() {
       this.form.jobId = this.jobId
@@ -82,56 +82,56 @@ export default {
             this.$message({
               message: '岗位不能为空',
               type: 'warning'
-            });
+            })
           } else {
-            this.loading = true;
+            this.loading = true
             if (this.isAdd) {
-              this.doAdd();
-            } else this.doEdit();
+              this.doAdd()
+            } else this.doEdit()
           }
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     doAdd() {
       add(this.form)
         .then(res => {
-          this.resetForm();
+          this.resetForm()
           this.$notify({
             title: '添加成功',
             type: 'success',
             duration: 2500
-          });
-          this.loading = false;
-          this.$parent.init();
+          })
+          this.loading = false
+          this.$parent.init()
         })
         .catch(err => {
-          this.loading = false;
-          console.log(err.response.data.message);
-        });
+          this.loading = false
+          console.log(err.response.data.message)
+        })
     },
     doEdit() {
       edit(this.form)
         .then(res => {
-          this.resetForm();
+          this.resetForm()
           this.$notify({
             title: '修改成功',
             type: 'success',
             duration: 2500
-          });
-          this.loading = false;
-          this.$parent.init();
+          })
+          this.loading = false
+          this.$parent.init()
         })
         .catch(err => {
-          this.loading = false;
-          console.log(err.response.data.message);
-        });
+          this.loading = false
+          console.log(err.response.data.message)
+        })
     },
     resetForm() {
-      this.dialog = false;
-      this.$refs['form'].resetFields();
-      this.jobId = null;
+      this.dialog = false
+      this.$refs['form'].resetFields()
+      this.jobId = null
       this.form = {
         id: '',
         jobs: { id: '' },
@@ -140,19 +140,19 @@ export default {
         createTime: '',
         updateTime: '',
         deleted: ''
-      };
+      }
     },
     getJobs() {
       getJobs({ enabled: 1 })
         .then(res => {
-          this.jobs = res.content;
+          this.jobs = res.content
         })
         .catch(err => {
-          console.log(err.response.data.message);
-        });
+          console.log(err.response.data.message)
+        })
     }
   }
-};
+}
 </script>
 
 <style scoped></style>

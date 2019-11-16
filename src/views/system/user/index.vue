@@ -1,54 +1,48 @@
 <template>
   <div class="app-container">
     <!--form 组件-->
-    <eForm ref="form" :is-add="isAdd" :dicts="dicts"/>
+    <eForm ref="form" :is-add="isAdd" :dicts="dicts" />
     <el-row :gutter="20">
       <!--部门数据-->
       <el-col :xs="7" :sm="6" :md="4" :lg="4" :xl="4">
         <div class="head-container">
-          <el-input v-model="deptName" clearable placeholder="输入部门名称搜索" prefix-icon="el-icon-search" style="width: 100%;" class="filter-item" @input="getDeptDatas"/>
+          <el-input v-model="deptName" clearable placeholder="输入部门名称搜索" prefix-icon="el-icon-search" style="width: 100%;" class="filter-item" @input="getDeptDatas" />
         </div>
-        <el-tree :data="depts" :props="defaultProps" :expand-on-click-node="false" default-expand-all @node-click="handleNodeClick"/>
+        <el-tree :data="depts" :props="defaultProps" :expand-on-click-node="false" default-expand-all @node-click="handleNodeClick" />
       </el-col>
       <!--用户数据-->
       <el-col :xs="17" :sm="18" :md="20" :lg="20" :xl="20">
         <!--工具栏-->
         <div class="head-container">
           <!-- 搜索 -->
-          <el-input v-model="query.value" clearable placeholder="输入关键字搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery"/>
+          <el-input v-model="query.value" clearable placeholder="输入关键字搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" />
           <el-select v-model="query.type" clearable placeholder="类型" class="filter-item" style="width: 130px">
-            <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key"/>
+            <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
           <el-select v-model="query.enabled" clearable placeholder="状态" class="filter-item" style="width: 90px" @change="toQuery">
-            <el-option v-for="item in enabledTypeOptions" :key="item.key" :label="item.display_name" :value="item.key"/>
+            <el-option v-for="item in enabledTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
           <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="toQuery">搜索</el-button>
           <!-- 新增 -->
-          <div v-permission="['ADMIN','USER_ALL','USER_CREATE']" style="display: inline-block;margin: 0px 2px;">
-            <el-button
-              class="filter-item"
-              size="mini"
-              type="primary"
-              icon="el-icon-plus"
-              @click="add">新增</el-button>
+          <div v-permission="['ADMIN', 'USER_ALL', 'USER_CREATE']" style="display: inline-block;margin: 0px 2px;">
+            <el-button class="filter-item" size="mini" type="primary" icon="el-icon-plus" @click="add">新增</el-button>
           </div>
           <!-- 导出 -->
           <div style="display: inline-block;">
-            <el-button
-              v-permission="['ADMIN']"
-              :loading="downloadLoading"
-              size="mini"
-              class="filter-item"
-              type="warning"
-              icon="el-icon-download"
-              @click="download">导出</el-button>
+            <el-button v-permission="['ADMIN']" :loading="downloadLoading" size="mini" class="filter-item" type="warning" icon="el-icon-download" @click="download">导出</el-button>
+          </div>
+          <!-- 模板下载 -->
+          <div style="display: inline-block;">
+            <el-button v-permission="['ADMIN']" :loading="downloadTemplateLoading" size="mini" class="filter-item" type="warning" icon="el-icon-download" @click="downloadTemplate">
+              模板下载
+            </el-button>
           </div>
         </div>
         <!--表格渲染-->
         <el-table v-loading="loading" :data="data" size="small" style="width: 100%;">
-          <el-table-column prop="username" label="用户名"/>
-          <el-table-column prop="phone" label="电话"/>
-          <el-table-column :show-overflow-tooltip="true" prop="email" label="邮箱"/>
+          <el-table-column prop="username" label="用户名" />
+          <el-table-column prop="phone" label="电话" />
+          <el-table-column :show-overflow-tooltip="true" prop="email" label="邮箱" />
           <el-table-column label="部门 / 岗位">
             <template slot-scope="scope">
               <div>{{ scope.row.dept.name }} / {{ scope.row.job.name }}</div>
@@ -66,20 +60,16 @@
               <span>{{ parseTime(scope.row.createTime) }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-if="checkPermission(['ADMIN','USER_ALL','USER_EDIT','USER_DELETE'])" label="操作" width="125" align="center">
+          <el-table-column v-if="checkPermission(['ADMIN', 'USER_ALL', 'USER_EDIT', 'USER_DELETE'])" label="操作" width="125" align="center">
             <template slot-scope="scope">
-              <el-button v-permission="['ADMIN','USER_ALL','USER_EDIT']" size="mini" type="primary" icon="el-icon-edit" @click="edit(scope.row)"/>
-              <el-popover
-                v-permission="['ADMIN','USER_ALL','USER_DELETE']"
-                :ref="scope.row.id"
-                placement="top"
-                width="180">
+              <el-button v-permission="['ADMIN', 'USER_ALL', 'USER_EDIT']" size="mini" type="primary" icon="el-icon-edit" @click="edit(scope.row)" />
+              <el-popover v-permission="['ADMIN', 'USER_ALL', 'USER_DELETE']" :ref="scope.row.id" placement="top" width="180">
                 <p>确定删除本条数据吗？</p>
                 <div style="text-align: right; margin: 0">
                   <el-button size="mini" type="text" @click="$refs[scope.row.id].doClose()">取消</el-button>
                   <el-button :loading="delLoading" type="primary" size="mini" @click="subDelete(scope.row.id)">确定</el-button>
                 </div>
-                <el-button slot="reference" type="danger" icon="el-icon-delete" size="mini"/>
+                <el-button slot="reference" type="danger" icon="el-icon-delete" size="mini" />
               </el-popover>
             </template>
           </el-table-column>
@@ -91,7 +81,8 @@
           style="margin-top: 8px;"
           layout="total, prev, pager, next, sizes"
           @size-change="sizeChange"
-          @current-change="pageChange"/>
+          @current-change="pageChange"
+        />
       </el-col>
     </el-row>
   </div>
@@ -110,21 +101,20 @@ export default {
   mixins: [initData, initDict],
   data() {
     return {
-      height: document.documentElement.clientHeight - 180 + 'px;', isAdd: false,
-      delLoading: false, deptName: '', depts: [], deptId: null,
+      height: document.documentElement.clientHeight - 180 + 'px;',
+      isAdd: false,
+      delLoading: false,
+      deptName: '',
+      depts: [],
+      deptId: null,
       defaultProps: {
         children: 'children',
         label: 'name'
       },
       downloadLoading: false,
-      queryTypeOptions: [
-        { key: 'username', display_name: '用户名' },
-        { key: 'email', display_name: '邮箱' }
-      ],
-      enabledTypeOptions: [
-        { key: 'true', display_name: '激活' },
-        { key: 'false', display_name: '锁定' }
-      ]
+      downloadTemplateLoading: false,
+      queryTypeOptions: [{ key: 'username', display_name: '用户名' }, { key: 'email', display_name: '邮箱' }],
+      enabledTypeOptions: [{ key: 'true', display_name: '激活' }, { key: 'false', display_name: '锁定' }]
     }
   },
   created() {
@@ -152,32 +142,40 @@ export default {
       const value = query.value
       const enabled = query.enabled
       this.params = { page: this.page, size: this.size, sort: sort, deptId: this.deptId }
-      if (type && value) { this.params[type] = value }
-      if (enabled !== '' && enabled !== null) { this.params['enabled'] = enabled }
+      if (type && value) {
+        this.params[type] = value
+      }
+      if (enabled !== '' && enabled !== null) {
+        this.params['enabled'] = enabled
+      }
       return true
     },
     subDelete(id) {
       this.delLoading = true
-      del(id).then(res => {
-        this.delLoading = false
-        this.$refs[id].doClose()
-        this.dleChangePage()
-        this.init()
-        this.$notify({
-          title: '删除成功',
-          type: 'success',
-          duration: 2500
+      del(id)
+        .then(res => {
+          this.delLoading = false
+          this.$refs[id].doClose()
+          this.dleChangePage()
+          this.init()
+          this.$notify({
+            title: '删除成功',
+            type: 'success',
+            duration: 2500
+          })
         })
-      }).catch(err => {
-        this.delLoading = false
-        this.$refs[id].doClose()
-        console.log(err.response.data.message)
-      })
+        .catch(err => {
+          this.delLoading = false
+          this.$refs[id].doClose()
+          console.log(err.response.data.message)
+        })
     },
     getDeptDatas() {
       const sort = 'id,desc'
       const params = { sort: sort }
-      if (this.deptName) { params['name'] = this.deptName }
+      if (this.deptName) {
+        params['name'] = this.deptName
+      }
       getDepts(params).then(res => {
         this.depts = res.content
       })
@@ -199,6 +197,7 @@ export default {
     },
     // 导出
     download() {
+      debugger
       this.downloadLoading = true
       import('@/utils/export2Excel').then(excel => {
         const tHeader = ['ID', '用户名', '邮箱', '头像地址', '状态', '注册日期', '最后修改密码日期']
@@ -214,15 +213,32 @@ export default {
     },
     // 数据转换
     formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => {
-        if (j === 'createTime' || j === 'lastPasswordResetTime') {
-          return parseTime(v[j])
-        } else if (j === 'enabled') {
-          return parseTime(v[j]) ? '启用' : '禁用'
-        } else {
-          return v[j]
-        }
-      }))
+      return jsonData.map(v =>
+        filterVal.map(j => {
+          if (j === 'createTime' || j === 'lastPasswordResetTime') {
+            return parseTime(v[j])
+          } else if (j === 'enabled') {
+            return parseTime(v[j]) ? '启用' : '禁用'
+          } else {
+            return v[j]
+          }
+        })
+      )
+    },
+    // 模板下载
+    downloadTemplate() {
+      debugger
+      this.downloadTemplateLoading = true
+      import('@/utils/export2Excel').then(excel => {
+        const tTemplateHeader = ['用户名', '手机号', '邮箱', '部门', '职位']
+        const templatedata = []
+        excel.export_json_to_excel({
+          header: tTemplateHeader,
+          data: templatedata,
+          filename: 'template-list'
+        })
+        this.downloadTemplateLoading = false
+      })
     },
     edit(data) {
       this.isAdd = false
@@ -231,7 +247,16 @@ export default {
       _this.getDepts()
       _this.getRoleLevel()
       _this.roleIds = []
-      _this.form = { id: data.id, username: data.username, phone: data.phone, email: data.email, enabled: data.enabled.toString(), roles: [], dept: { id: data.dept.id }, job: { id: data.job.id }}
+      _this.form = {
+        id: data.id,
+        username: data.username,
+        phone: data.phone,
+        email: data.email,
+        enabled: data.enabled.toString(),
+        roles: [],
+        dept: { id: data.dept.id },
+        job: { id: data.job.id }
+      }
       data.roles.forEach(function(data, index) {
         _this.roleIds.push(data.id)
       })
@@ -244,5 +269,4 @@ export default {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

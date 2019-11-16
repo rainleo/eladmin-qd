@@ -33,11 +33,31 @@
           </div>
           <!-- 模板下载 -->
           <div style="display: inline-block;">
-            <el-button v-permission="['ADMIN']" :loading="downloadTemplateLoading" size="mini" class="filter-item" type="warning" icon="el-icon-download" @click="downloadTemplate">
+            <el-button v-permission="['ADMIN']" :loading="downloadTemplateLoading" size="mini" class="filter-item" type="success" icon="el-icon-download" @click="downloadTemplate">
               模板下载
             </el-button>
           </div>
+          <div style="display: inline-block;margin: 0px 2px;">
+            <el-button class="filter-item" size="mini" type="primary" icon="el-icon-upload" @click="dialog = true">导入</el-button>
+          </div>
         </div>
+        <!-- 文件上传 -->
+        <el-dialog :visible.sync="dialog" append-to-body width="500px" @close="doSubmit">
+          <el-upload
+            :before-remove="handleBeforeRemove"
+            :on-success="handleSuccess"
+            :on-error="handleError"
+            :file-list="fileList"
+            :headers="headers"
+            :action="userImportApi"
+            class="upload-demo"
+            multiple
+          >
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" style="display: block;" class="el-upload__tip">请勿上传xlsx结尾的文件，勿上传非法文件</div>
+          </el-upload>
+          <div slot="footer" class="dialog-footer"><el-button type="primary" @click="doSubmit">确认</el-button></div>
+        </el-dialog>
         <!--表格渲染-->
         <el-table v-loading="loading" :data="data" size="small" style="width: 100%;">
           <el-table-column prop="username" label="用户名" />
@@ -96,6 +116,8 @@ import { del } from '@/api/user'
 import { getDepts } from '@/api/dept'
 import { parseTime } from '@/utils/index'
 import eForm from './form'
+import { mapGetters } from 'vuex'
+import { getToken } from '@/utils/auth'
 export default {
   components: { eForm },
   mixins: [initData, initDict],
@@ -114,8 +136,18 @@ export default {
       downloadLoading: false,
       downloadTemplateLoading: false,
       queryTypeOptions: [{ key: 'username', display_name: '用户名' }, { key: 'email', display_name: '邮箱' }],
-      enabledTypeOptions: [{ key: 'true', display_name: '激活' }, { key: 'false', display_name: '锁定' }]
+      enabledTypeOptions: [{ key: 'true', display_name: '激活' }, { key: 'false', display_name: '锁定' }],
+
+      headers: { Authorization: 'Bearer ' + getToken() },
+      dialog: false,
+      dialogImageUrl: '',
+      dialogVisible: false,
+      fileList: [],
+      files: []
     }
+  },
+  computed: {
+    ...mapGetters(['userImportApi'])
   },
   created() {
     this.getDeptDatas()
@@ -264,6 +296,37 @@ export default {
       _this.jobId = data.job.id
       _this.getJobs(_this.deptId)
       _this.dialog = true
+    },
+    // 导入
+    handleSuccess(response, file, fileList) {
+      const uid = file.uid
+      const id = response.id
+      this.files.push({ uid, id })
+    },
+    handleBeforeRemove(file, fileList) {
+      for (let i = 0; i < this.files.length; i++) {
+        if (this.files[i].uid === file.uid) {
+          del(this.files[i].id).then(res => {})
+          return true
+        }
+      }
+    },
+    // 刷新列表数据
+    doSubmit() {
+      this.fileList = []
+      this.dialogVisible = false
+      this.dialogImageUrl = ''
+      this.dialog = false
+      this.init()
+    },
+    // 监听上传失败
+    handleError(e, file, fileList) {
+      const msg = JSON.parse(e.message)
+      this.$notify({
+        title: msg.message,
+        type: 'error',
+        duration: 2500
+      })
     }
   }
 }

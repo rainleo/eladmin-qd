@@ -7,6 +7,9 @@
       <el-select v-model="query.type" clearable placeholder="类型" class="filter-item" style="width: 130px">
         <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
+      <el-select v-model="query.status" clearable placeholder="状态" class="filter-item" style="width: 90px" @change="toQuery">
+        <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+      </el-select>
       <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="toQuery">搜索</el-button>
       <!-- 新增 -->
       <div style="display: inline-block;margin: 0px 2px;">
@@ -21,6 +24,11 @@
       <el-table-column prop="copyPerson.username" label="抄送人" />
       <el-table-column prop="assistantPerson.username" label="协助人员" />
       <el-table-column prop="content" label="待办内容" />
+      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.status ? 'success' : 'warning'">{{ scope.row.status ? '已完成' : '待完成' }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="createTime" label="创建时间" width="135px">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
@@ -76,7 +84,8 @@ export default {
         { key: 'copyPersonName', display_name: '抄送人' },
         { key: 'assistantPersonName', display_name: '协助人员' },
         { key: 'content', display_name: '待办内容' }
-      ]
+      ],
+      statusTypeOptions: [{ key: 1, display_name: '已完成' }, { key: 0, display_name: '待完成' }]
     }
   },
   created() {
@@ -95,8 +104,12 @@ export default {
       const query = this.query
       const type = query.type
       const value = query.value
+      const status = query.status
       if (type && value) {
         this.params[type] = value
+      }
+      if (status !== '' && status !== null) {
+        this.params['status'] = status
       }
       return true
     },
@@ -135,6 +148,7 @@ export default {
         copyPerson: { id: data.copyPerson.id },
         assistantPerson: { id: data.assistantPerson === null ? '' : data.assistantPerson.id },
         content: data.content,
+        status: data.status,
         createTime: data.createTime,
         updateTime: data.updateTime,
         deleted: data.deleted

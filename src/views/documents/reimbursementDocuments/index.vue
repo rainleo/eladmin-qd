@@ -35,15 +35,38 @@
       <el-table-column prop="user.username" label="报销人" />
       <el-table-column prop="reimbursementAbstract" label="报销摘要" />
       <el-table-column prop="amount" label="报销金额" />
-      <el-table-column prop="attachment" label="附件" width="180px">
-        <!-- <template slot-scope="scope">
-        <img :src="attachment" min-width="70" height="70" />
-      </template> -->
+      <el-table-column prop="reimbursementDetailList" label="附件">
         <template slot-scope="scope">
-          <image :src="scope.row.attachment" width="100" height="100" />
+          <i v-if="scope.row.reimbursementDetailList.length != 0">
+            <el-popover trigger="hover">
+              <el-table :data="scope.row.reimbursementDetailList" style="max-height:350px;overflow-y:auto">
+                <el-table-column label="序号" type="index" width="60px" align="center" />
+                <el-table-column label="附件" width="250px" align="center">
+                  <template slot-scope="scope">
+                    <el-popover placement="left" title="附件详情" trigger="click">
+                      <el-image slot="reference" :src="scope.row.attachment" :alt="scope.row.attachment" style="max-height: 200px;max-width: 200px" />
+                      <el-image :src="scope.row.attachment" />
+                    </el-popover>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <el-button slot="reference" size="mini" type="text">附件详情</el-button>
+            </el-popover>
+          </i>
         </template>
       </el-table-column>
-      <el-table-column prop="reviewer" label="审批人" align="center">
+      <el-table-column :show-overflow-tooltip="true" prop="status" label="状态">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.status ? 'success' : 'warning'">{{ scope.row.status ? '已审批' : '审批中' }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="createTime" label="创建时间" width="135px">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createTime) }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column prop="reviewer" label="审批人">
         <template slot-scope="scope">
           <el-popover trigger="hover">
             <el-table :data="scope.row.reviewerList" size="small" style="width: 100%">
@@ -209,6 +232,11 @@ export default {
       _this.userId = data.user.id
       _this.getUsers(_this.deptId)
       _this.dialog = true
+    },
+    // 获取表格序号
+    getIndex($index) {
+      // 表格序号
+      return (this.page.currentPage - 1) * this.page.pageSize + $index + 1
     }
   }
 }

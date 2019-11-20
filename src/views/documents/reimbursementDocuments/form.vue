@@ -24,9 +24,14 @@
             :auto-upload="false"
             :on-preview="handlePictureCardPreview"
             :on-remove="handleRemove"
+            :before-remove="handleBeforeRemove"
+            :on-success="handleSuccess"
+            :on-error="handleError"
+            :headers="headers"
+            :action="qiNiuUploadApi"
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
             list-type="picture-card"
+            multiple
           >
             <i class="el-icon-plus" />
           </el-upload>
@@ -50,6 +55,8 @@ import { add, edit } from '@/api/reimbursementDocuments'
 import { del } from '@/api/reimbursementDetail'
 import { getDepts } from '@/api/dept'
 import { getUsers } from '@/api/user'
+import { getToken } from '@/utils/auth'
+import { mapGetters } from 'vuex'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 export default {
@@ -76,6 +83,7 @@ export default {
       dialog: false,
       dialogImageUrl: '',
       dialogVisible: false,
+      headers: { Authorization: 'Bearer ' + getToken() },
       form: {
         status: '',
         reimbursementAbstract: '',
@@ -87,15 +95,20 @@ export default {
       deptId: null,
       userId: null,
       users: [],
-      reimbursementDetailList: [{ attachment: [] }],
+      reimbursementDetailList: [],
       rules: {
         status: [{ required: true, message: '状态不能为空', trigger: 'blur' }],
         reimbursementAbstract: [{ required: true, message: '摘要不能为空', trigger: 'blur' }],
         amount: [{ required: true, trigger: 'blur', validator: validAmount }]
       },
       statusTypeOptions: [{ key: 1, display_name: '已审批' }, { key: 0, display_name: '审批中' }],
-      fileList: [{ name: '', url: '' }]
+      fileList: [{ name: '', url: '' }],
+      files: []
     }
+  },
+  computed: {
+    // 映射 this.qiNiuUploadApi 为 store.getters.qiNiuUploadApi
+    ...mapGetters(['qiNiuUploadApi'])
   },
   methods: {
     checkPermission,
@@ -107,6 +120,7 @@ export default {
       this.form.userId = this.userId
       this.form.user = null
       this.form.dept = null
+      this.form.reimbursementDetailList = this.reimbursementDetailList
       this.$refs['form'].validate(valid => {
         if (valid) {
           if (this.deptId === null || this.deptId === undefined) {
@@ -245,6 +259,31 @@ export default {
     },
     submitUpload() {
       this.$refs.upload.submit()
+    },
+    handleSuccess(response, file, fileList) {
+      const uid = file.uid
+      const id = response.id
+      const attachment = response.data[0]
+      this.files.push({ uid, id })
+      this.reimbursementDetailList.push({ attachment })
+    },
+    handleBeforeRemove(file, fileList) {
+      for (let i = 0; i < this.files.length; i++) {
+        if (this.files[i].uid === file.uid) {
+          del(this.files[i].id).then(res => {})
+          return true
+        }
+      }
+    },
+
+    // 监听上传失败
+    handleError(e, file, fileList) {
+      const msg = JSON.parse(e.message)
+      this.$notify({
+        title: msg.message,
+        type: 'error',
+        duration: 2500
+      })
     }
   }
 }

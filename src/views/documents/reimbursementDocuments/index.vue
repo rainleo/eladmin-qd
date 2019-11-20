@@ -226,7 +226,7 @@ export default {
         user: { id: data.user.id },
         reimbursementAbstract: data.reimbursementAbstract,
         amount: data.amount,
-        attachment: data.attachment
+        reimbursementDetailList: data.reimbursementDetailList
       }
       _this.deptId = data.dept.id
       _this.userId = data.user.id

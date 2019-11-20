@@ -16,15 +16,27 @@
       </el-form-item>
       <el-form-item label="报销摘要" prop="reimbursementAbstract"><el-input v-model.trim="form.reimbursementAbstract" style="width: 370px;" /></el-form-item>
       <el-form-item label="报销金额" prop="amount"><el-input v-model.number="form.amount" style="width: 370px;" /></el-form-item>
-      <el-form-item label="附件" prop="attachment">
-        <el-input v-model="form.attachment" style="width: 370px;" />
-
-        <!-- 上传 -->
-        <div style="display: inline-block;margin: 0px 2px;">
-          <el-button class="filter-item" size="mini" type="primary" icon="el-icon-upload" @click="dialog = true">上传文件</el-button>
-        </div>
+      <el-form-item v-model="form.reimbursementDetailList" prop="reimbursementDetailList" label="附件">
+        <template slot-scope="scope">
+          <el-upload
+            ref="upload"
+            :file-list="getFileList(form.reimbursementDetailList)"
+            :auto-upload="false"
+            :on-preview="handlePictureCardPreview"
+            :on-remove="handleRemove"
+            class="upload-demo"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            list-type="picture-card"
+          >
+            <i class="el-icon-plus" />
+          </el-upload>
+          <el-dialog :visible.sync="dialogVisible"><img :src="dialogImageUrl" width="100%" alt="" ></el-dialog>
+          <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+          <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+        </template>
       </el-form-item>
     </el-form>
+
     <div slot="footer" class="dialog-footer">
       <el-button type="text" @click="cancel">取消</el-button>
       <el-button :loading="loading" type="primary" @click="doSubmit">确认</el-button>
@@ -33,7 +45,9 @@
 </template>
 
 <script>
+import checkPermission from '@/utils/permission'
 import { add, edit } from '@/api/reimbursementDocuments'
+import { del } from '@/api/reimbursementDetail'
 import { getDepts } from '@/api/dept'
 import { getUsers } from '@/api/user'
 import Treeselect from '@riophae/vue-treeselect'
@@ -57,27 +71,34 @@ export default {
       }
     }
     return {
+      delLoading: false,
       loading: false,
       dialog: false,
+      dialogImageUrl: '',
+      dialogVisible: false,
       form: {
         status: '',
         reimbursementAbstract: '',
         amount: '',
-        attachment: ''
+        attachment: '',
+        reimbursementDetailList: []
       },
       depts: [],
       deptId: null,
       userId: null,
       users: [],
+      reimbursementDetailList: [{ attachment: [] }],
       rules: {
         status: [{ required: true, message: '状态不能为空', trigger: 'blur' }],
         reimbursementAbstract: [{ required: true, message: '摘要不能为空', trigger: 'blur' }],
         amount: [{ required: true, trigger: 'blur', validator: validAmount }]
       },
-      statusTypeOptions: [{ key: 1, display_name: '已审批' }, { key: 0, display_name: '审批中' }]
+      statusTypeOptions: [{ key: 1, display_name: '已审批' }, { key: 0, display_name: '审批中' }],
+      fileList: [{ name: '', url: '' }]
     }
   },
   methods: {
+    checkPermission,
     cancel() {
       this.resetForm()
     },
@@ -86,7 +107,6 @@ export default {
       this.form.userId = this.userId
       this.form.user = null
       this.form.dept = null
-      debugger
       this.$refs['form'].validate(valid => {
         if (valid) {
           if (this.deptId === null || this.deptId === undefined) {
@@ -109,6 +129,26 @@ export default {
           return false
         }
       })
+    },
+    subDelete(id) {
+      this.delLoading = true
+      del(id)
+        .then(res => {
+          this.delLoading = false
+          this.$refs[id].doClose()
+          this.dleChangePage()
+          this.init()
+          this.$notify({
+            title: '删除成功',
+            type: 'success',
+            duration: 2500
+          })
+        })
+        .catch(err => {
+          this.delLoading = false
+          this.$refs[id].doClose()
+          console.log(err.response.data.message)
+        })
     },
     doAdd() {
       add(this.form)
@@ -184,6 +224,27 @@ export default {
     },
     selectFun(node, instanceId) {
       this.getUsers(node.id)
+    },
+
+    // +++++++++++++++++++++++++++++上传图片+++++++++++++++++++++++++++++++
+    getFileList(reimbursementDetailList) {
+      if (reimbursementDetailList === null || reimbursementDetailList === undefined || reimbursementDetailList.length === 0) {
+        return []
+      }
+      for (var i = 0; i < reimbursementDetailList.length; i++) {
+        this.fileList[i] = { name: reimbursementDetailList[i].id, url: reimbursementDetailList[i].attachment }
+      }
+      return this.fileList
+    },
+    handleRemove(file, fileList) {
+      console.log(file, fileList)
+    },
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url
+      this.dialogVisible = true
+    },
+    submitUpload() {
+      this.$refs.upload.submit()
     }
   }
 }

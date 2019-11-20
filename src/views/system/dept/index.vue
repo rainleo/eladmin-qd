@@ -71,13 +71,13 @@
 </template>
 
 <script>
-import treeTable from '@/components/TreeTable';
-import checkPermission from '@/utils/permission';
-import initData from '@/mixins/initData';
-import initDict from '@/mixins/initDict';
-import { del } from '@/api/dept';
-import { parseTime } from '@/utils/index';
-import eForm from './form';
+import treeTable from '@/components/TreeTable'
+import checkPermission from '@/utils/permission'
+import initData from '@/mixins/initData'
+import initDict from '@/mixins/initDict'
+import { del } from '@/api/dept'
+import { parseTime } from '@/utils/index'
+import eForm from './form'
 export default {
   components: { eForm, treeTable },
   mixins: [initData, initDict],
@@ -92,77 +92,77 @@ export default {
       enabledTypeOptions: [{ key: 'true', display_name: '正常' }, { key: 'false', display_name: '禁用' }],
       delLoading: false,
       expand: true
-    };
+    }
   },
   created() {
     this.$nextTick(() => {
-      this.init();
+      this.init()
       // 加载数据字典
-      this.getDict('dept_status');
-    });
+      this.getDict('dept_status')
+    })
   },
   methods: {
     parseTime,
     checkPermission,
     beforeInit() {
-      this.url = 'api/dept';
-      const sort = 'id,desc';
-      this.params = { page: this.page, size: this.size, sort: sort };
-      const query = this.query;
-      const value = query.value;
-      const enabled = query.enabled;
+      this.url = 'api/dept'
+      const sort = 'id,desc'
+      this.params = { page: this.page, size: this.size, sort: sort }
+      const query = this.query
+      const value = query.value
+      const enabled = query.enabled
       if (value) {
-        this.params['name'] = value;
+        this.params['name'] = value
       }
       if (enabled !== '' && enabled !== null) {
-        this.params['enabled'] = enabled;
+        this.params['enabled'] = enabled
       }
-      return true;
+      return true
     },
     subDelete(id) {
-      this.delLoading = true;
+      this.delLoading = true
       del(id)
         .then(res => {
-          this.delLoading = false;
-          this.$refs[id].doClose();
-          this.init();
+          this.delLoading = false
+          this.$refs[id].doClose()
+          this.init()
           this.$notify({
             title: '删除成功',
             type: 'success',
             duration: 2500
-          });
+          })
         })
         .catch(err => {
-          this.delLoading = false;
-          this.$refs[id].doClose();
-          console.log(err.response.data.message);
-        });
+          this.delLoading = false
+          this.$refs[id].doClose()
+          console.log(err.response.data.message)
+        })
     },
     add() {
-      this.isAdd = true;
-      const _this = this.$refs.form;
-      _this.getDepts();
-      _this.dialog = true;
+      this.isAdd = true
+      const _this = this.$refs.form
+      _this.getDepts()
+      _this.dialog = true
     },
     changeExpand() {
-      this.expand = !this.expand;
-      this.init();
+      this.expand = !this.expand
+      this.init()
     },
     edit(data) {
-      this.isAdd = false;
-      const _this = this.$refs.form;
-      _this.getDepts();
+      this.isAdd = false
+      const _this = this.$refs.form
+      _this.getDepts()
       _this.form = {
         id: data.id,
         name: data.name,
         pid: data.pid,
         createTime: data.createTime,
         enabled: data.enabled.toString()
-      };
-      _this.dialog = true;
+      }
+      _this.dialog = true
     }
   }
-};
+}
 </script>
 
 <style scoped></style>

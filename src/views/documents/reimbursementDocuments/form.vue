@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :append-to-body="true" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
+  <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
       <el-form-item label="部门" prop="depts"><treeselect v-model="deptId" :options="depts" style="width: 370px;" placeholder="选择部门" @select="selectFun" /></el-form-item>
       <el-form-item label="报销人" prop="users">
@@ -27,6 +27,7 @@
             :before-remove="handleBeforeRemove"
             :on-success="handleSuccess"
             :on-error="handleError"
+            :before-upload="beforeAvatarUpload"
             :headers="headers"
             :action="qiNiuUploadApi"
             class="upload-demo"
@@ -37,7 +38,7 @@
           </el-upload>
           <el-dialog :visible.sync="dialogVisible"><img :src="dialogImageUrl" width="100%" alt="" ></el-dialog>
           <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-          <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+          <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过20MB</div>
         </template>
       </el-form-item>
     </el-form>
@@ -198,6 +199,7 @@ export default {
           console.log(err.response.data.message)
         })
     },
+
     resetForm() {
       this.dialog = false
       this.$refs['form'].resetFields()
@@ -229,6 +231,7 @@ export default {
         })
     },
     getDepts() {
+      debugger
       getDepts({ enabled: true }).then(res => {
         this.depts = res.content
       })
@@ -243,7 +246,6 @@ export default {
 
     // +++++++++++++++++++++++++++++上传图片+++++++++++++++++++++++++++++++
     getFileList(reimbursementDetailList) {
-      debugger
       if (reimbursementDetailList === null || reimbursementDetailList === undefined || reimbursementDetailList.length === 0) {
         return []
       }
@@ -285,7 +287,18 @@ export default {
         }
       }
     },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === 'image/jpeg/png'
+      const isLt2M = file.size / 1024 / 1024 < 20
 
+      if (!isJPG) {
+        this.$message.error('上传文件只能是 JPG/PNG 格式!')
+      }
+      if (!isLt2M) {
+        this.$message.error('上传文件大小不能超过 20MB!')
+      }
+      return isJPG && isLt2M
+    },
     // 监听上传失败
     handleError(e, file, fileList) {
       const msg = JSON.parse(e.message)

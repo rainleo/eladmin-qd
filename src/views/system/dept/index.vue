@@ -91,7 +91,8 @@ export default {
       ],
       enabledTypeOptions: [{ key: 'true', display_name: '正常' }, { key: 'false', display_name: '禁用' }],
       delLoading: false,
-      expand: true
+      expand: true,
+      deptDetailList: []
     }
   },
   created() {
@@ -105,6 +106,7 @@ export default {
     parseTime,
     checkPermission,
     beforeInit() {
+      this.deptDetailList = []
       this.url = 'api/dept'
       const sort = 'id,desc'
       this.params = { page: this.page, size: this.size, sort: sort }
@@ -146,6 +148,7 @@ export default {
     },
     changeExpand() {
       this.expand = !this.expand
+      this.deptDetailList = []
       this.init()
     },
     edit(data) {
@@ -157,7 +160,8 @@ export default {
         name: data.name,
         pid: data.pid,
         createTime: data.createTime,
-        enabled: data.enabled.toString()
+        enabled: data.enabled.toString(),
+        deptDetailList: data.deptDetailList
       }
       _this.dialog = true
     }

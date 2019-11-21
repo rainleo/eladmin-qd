@@ -230,6 +230,7 @@ export default {
       }
       _this.deptId = data.dept.id
       _this.userId = data.user.id
+      _this.getDepts()
       _this.getUsers(_this.deptId)
       _this.dialog = true
     },

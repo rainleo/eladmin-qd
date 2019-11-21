@@ -203,6 +203,7 @@ export default {
       this.$refs['form'].resetFields()
       this.deptId = null
       this.userId = null
+      this.reimbursementDetailList = []
       this.form = {
         status: '',
         dept: {
@@ -242,6 +243,7 @@ export default {
 
     // +++++++++++++++++++++++++++++上传图片+++++++++++++++++++++++++++++++
     getFileList(reimbursementDetailList) {
+      debugger
       if (reimbursementDetailList === null || reimbursementDetailList === undefined || reimbursementDetailList.length === 0) {
         return []
       }
@@ -261,11 +263,19 @@ export default {
       this.$refs.upload.submit()
     },
     handleSuccess(response, file, fileList) {
+      debugger
       const uid = file.uid
       const id = response.id
-      const attachment = response.data[0]
+      // const attachment = response.data[0]
+      const qiniuContent = response.qiniuContent
       this.files.push({ uid, id })
-      this.reimbursementDetailList.push({ attachment })
+      this.reimbursementDetailList.push({
+        attachment: qiniuContent.url,
+        name: qiniuContent.key,
+        bucket: qiniuContent.bucket,
+        size: qiniuContent.size,
+        type: qiniuContent.type
+      })
     },
     handleBeforeRemove(file, fileList) {
       for (let i = 0; i < this.files.length; i++) {

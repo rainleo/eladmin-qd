@@ -38,18 +38,20 @@
       <el-table-column prop="amount" label="申请金额" />
       <el-table-column prop="reviewer" label="审批人" align="center">
         <template slot-scope="scope">
-          <el-popover trigger="hover">
-            <el-table :data="scope.row.reviewerList" size="small" style="width: 100%">
-              <el-table-column prop="sorted" label="审批顺序" />
-              <el-table-column prop="user.username" label="审批人" />
-              <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态">
-                <template slot-scope="scope">
-                  <el-tag :type="scope.row.auditStatus ? 'success' : 'warning'">{{ scope.row.auditStatus ? '已审批' : '审批中' }}</el-tag>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-button slot="reference" size="mini" type="text">查看详情</el-button>
-          </el-popover>
+          <i v-if="scope.row.reviewerList.length != 0">
+            <el-popover trigger="hover">
+              <el-table :data="scope.row.reviewerList" size="small" style="width: 100%">
+                <el-table-column prop="sorted" label="审批顺序" />
+                <el-table-column prop="user.username" label="审批人" />
+                <el-table-column :show-overflow-tooltip="true" prop="auditStatus" label="审批状态">
+                  <template slot-scope="scope">
+                    <el-tag :type="scope.row.auditStatus ? 'success' : 'warning'">{{ scope.row.auditStatus ? '已审批' : '审批中' }}</el-tag>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <el-button slot="reference" size="mini" type="text">查看详情</el-button>
+            </el-popover>
+          </i>
         </template>
       </el-table-column>
       <el-table-column :show-overflow-tooltip="true" prop="status" label="状态">

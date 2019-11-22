@@ -51,3 +51,12 @@ export function getUsers(params) {
     params
   })
 }
+
+// 从审批链查询审批人
+export function getAuditUsers(params) {
+  return request({
+    url: 'api/users/auditor',
+    method: 'get',
+    params
+  })
+}

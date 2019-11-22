@@ -12,7 +12,7 @@
       </el-select>
       <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="toQuery">搜索</el-button>
       <!-- 新增 -->
-      <div style="display: inline-blockmargin: 0px 2px;">
+      <div style="display: inline-block; margin: 0px 2px;">
         <el-button
           v-permission="['ADMIN', 'APPLICATIONDOCUMENTS_ALL', 'APPLICATIONDOCUMENTS_CREATE']"
           class="filter-item"
@@ -99,7 +99,6 @@
 import checkPermission from '@/utils/permission'
 import initData from '@/mixins/initData'
 import { del } from '@/api/applicationDocuments'
-import { getDepts } from '@/api/dept'
 import { parseTime } from '@/utils/index'
 import eForm from './form'
 export default {
@@ -116,14 +115,12 @@ export default {
         { key: 'subjectName', display_name: '申请事项' },
         { key: 'applicationDescription', display_name: '事项描述' },
         { key: 'amount', display_name: '申请金额' }
-        // { key: 'createTime', display_name: '创建时间' }
       ],
       statusTypeOptions: [{ key: 1, display_name: '已审批' }, { key: 0, display_name: '审批中' }]
     }
   },
 
   created() {
-    this.getDeptDatas()
     this.$nextTick(() => {
       this.init()
     })
@@ -148,16 +145,6 @@ export default {
       }
       return true
     },
-    getDeptDatas() {
-      const sort = 'id,desc'
-      const params = { sort: sort }
-      if (this.deptName) {
-        params['name'] = this.deptName
-      }
-      getDepts(params).then(res => {
-        this.depts = res.content
-      })
-    },
     subDelete(id) {
       this.delLoading = true
       del(id)
@@ -181,12 +168,12 @@ export default {
     add() {
       this.isAdd = true
       this.$refs.form.dialog = true
+      // index定义传递给form,form写实现
       this.$refs.form.getDepts()
     },
     edit(data) {
       this.isAdd = false
       const _this = this.$refs.form
-      _this.getDepts()
       _this.form = {
         id: data.id,
         applicationNo: data.applicationNo,
@@ -200,6 +187,8 @@ export default {
       _this.deptId = data.dept.id
       _this.userId = data.user.id
       _this.accountingSubjectsId = data.accountingSubjects.id
+      // index定义传递给form,form写实现
+      _this.getDepts()
       _this.getUsers(_this.deptId)
       _this.dialog = true
     }

@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :append-to-body="true" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="520px">
+  <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="520px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="120px">
       <el-form-item label="摘要" prop="todoAbstract"><el-input v-model.trim="form.todoAbstract" style="width: 350px;" /></el-form-item>
       <el-form-item label="预期完成时间" prop="expectedCompletionTime" style="width: 350px;">

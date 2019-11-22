@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :append-to-body="true" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
+  <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="90px">
       <el-form-item label="科目代码" prop="subjectCode"><el-input v-model.trim="form.subjectCode" style="width: 370px;" /></el-form-item>
       <el-form-item label="科目名称" prop="subjectName"><el-input v-model.trim="form.subjectName" style="width: 370px;" /></el-form-item>

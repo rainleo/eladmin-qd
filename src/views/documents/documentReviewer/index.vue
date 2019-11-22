@@ -156,6 +156,7 @@ export default {
     add() {
       this.isAdd = true
       this.$refs.form.dialog = true
+      this.$refs.form.getDocuments()
     },
     edit(data) {
       this.isAdd = false
@@ -169,8 +170,13 @@ export default {
         source: data.source,
         createTime: data.createTime,
         updateTime: data.updateTime,
-        deleted: data.deleted
+        deleted: data.deleted,
+        user: { id: data.user.id }
       }
+      _this.documentId = data.documentId
+      _this.userId = data.user.id
+      _this.getDocuments()
+      _this.getAuditUsers(_this.sorted, _this.source)
       _this.dialog = true
     }
   }

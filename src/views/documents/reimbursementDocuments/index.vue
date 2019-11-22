@@ -135,7 +135,6 @@
 import checkPermission from '@/utils/permission'
 import initData from '@/mixins/initData'
 import { del } from '@/api/reimbursementDocuments'
-import { getDepts } from '@/api/dept'
 import { parseTime } from '@/utils/index'
 import eForm from './form'
 export default {
@@ -157,7 +156,6 @@ export default {
     }
   },
   created() {
-    this.getDeptDatas()
     this.$nextTick(() => {
       this.init()
     })
@@ -181,16 +179,6 @@ export default {
         this.params['status'] = status
       }
       return true
-    },
-    getDeptDatas() {
-      const sort = 'id,desc'
-      const params = { sort: sort }
-      if (this.deptName) {
-        params['name'] = this.deptName
-      }
-      getDepts(params).then(res => {
-        this.depts = res.content
-      })
     },
     subDelete(id) {
       this.delLoading = true

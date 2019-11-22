@@ -22,3 +22,12 @@ export function edit(data) {
     data
   })
 }
+
+// 查询所有单据（申请和报销）
+export function getAllDocuments(params) {
+  return request({
+    url: 'api/documentReviewer/allDocuments',
+    method: 'get',
+    params
+  })
+}

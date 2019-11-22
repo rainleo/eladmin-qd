@@ -231,7 +231,6 @@ export default {
         })
     },
     getDepts() {
-      debugger
       getDepts({ enabled: true }).then(res => {
         this.depts = res.content
       })

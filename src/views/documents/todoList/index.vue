@@ -138,7 +138,6 @@ export default {
       this.$refs.form.dialog = true
     },
     edit(data) {
-      debugger
       this.isAdd = false
       const _this = this.$refs.form
       _this.form = {

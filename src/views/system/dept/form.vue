@@ -164,7 +164,6 @@ export default {
     },
     // +++++++++++++++++++++++++++++上传图片+++++++++++++++++++++++++++++++
     getFileList(deptDetailList) {
-      debugger
       if (deptDetailList === null || deptDetailList === undefined || deptDetailList.length === 0) {
         return []
       }
@@ -184,7 +183,6 @@ export default {
       this.$refs.upload.submit()
     },
     handleSuccess(response, file, fileList) {
-      debugger
       const uid = file.uid
       const id = response.id
       // const attachment = response.data[0]

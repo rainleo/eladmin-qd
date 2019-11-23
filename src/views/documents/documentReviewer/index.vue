@@ -171,7 +171,7 @@ export default {
         createTime: data.createTime,
         updateTime: data.updateTime,
         deleted: data.deleted,
-        user: { id: data.user.id }
+        user: { id: data.user.id, username: data.user.username }
       }
       _this.documentId = data.documentId
       _this.userId = data.user.id

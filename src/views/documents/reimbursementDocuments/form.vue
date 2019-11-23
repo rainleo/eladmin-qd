@@ -264,7 +264,6 @@ export default {
       this.$refs.upload.submit()
     },
     handleSuccess(response, file, fileList) {
-      debugger
       const uid = file.uid
       const id = response.id
       // const attachment = response.data[0]

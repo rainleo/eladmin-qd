@@ -2,20 +2,18 @@
   <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
       <el-form-item label="单据ID" prop="documents">
-        <template>
-          <el-select v-model="documentId" placeholder="请选择单据ID" style="width: 370px;" @select="selectFun">
-            <el-option v-for="(item, index) in documents" :key="item.id + index" :label="item.id" :value="item.id">
-              <span style="float: left">{{ item.id }}</span>
-              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.source }}</span>
-              <span style="float: right; color: #8492a6; font-size: 13px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.applicationUser }}</span>
-            </el-option>
-          </el-select>
-        </template>
+        <el-select v-model="documentId" :options="documents" placeholder="请选择单据ID" style="width: 370px;" @change="selectSourceFun">
+          <el-option v-for="(item, index) in documents" :key="index" :label="item.id" :value="item.source + '_' + item.id + '_' + index">
+            <span style="float: left">{{ item.id }}</span>
+            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.source }}</span>
+            <span style="float: right; color: #8492a6; font-size: 13px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.applicationUser }}</span>
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item label="审批顺序" prop="sorted">
-        <el-select v-model="form.sorted" class="filter-item" style="width: 370px;" placeholder="请选择审批顺序" @select="selectFun">
-          <el-option v-for="(item, index) in sortedTypeOptions" :key="item.key + index" :label="item.display_name" :value="item.key" />
+        <el-select v-model="form.sorted" class="filter-item" style="width: 370px;" placeholder="请选择审批顺序" @change="selectSortedFun">
+          <el-option v-for="(item, index) in sortedTypeOptions" :key="item.display_name + index" :label="item.display_name" :value="item.sortedkey" />
         </el-select>
       </el-form-item>
 
@@ -26,8 +24,8 @@
       </el-form-item>
       <el-form-item label="审批状态" prop="auditStatus">
         <template>
-          <el-select v-model="form.auditStatus" placeholder="审批状态" class="filter-item" style="width: 370px;">
-            <el-option v-for="(item, index) in auditStatusTypeOptions" :key="item.key + index" :label="item.display_name" :value="item.key" />
+          <el-select v-model="form.auditStatus" placeholder="请选择审批状态" class="filter-item" style="width: 370px;">
+            <el-option v-for="(item, index) in auditStatusTypeOptions" :key="item.display_name + index" :label="item.display_name" :value="item.key_name" />
           </el-select>
         </template>
       </el-form-item>
@@ -42,7 +40,9 @@
 <script>
 import { add, edit, getAllDocuments } from '@/api/documentReviewer'
 import { getAuditUsers } from '@/api/auditChain'
+import { Select, Option } from 'element-ui'
 export default {
+  components: { Select, Option },
   props: {
     isAdd: {
       type: Boolean,
@@ -55,32 +55,34 @@ export default {
       dialog: false,
       form: {
         id: '',
-        documentId: '',
+        // documentId: '',
         source: '',
         applicationUser: '',
-        userId: '',
         sorted: '',
         auditStatus: '',
         createTime: '',
         updateTime: '',
         deleted: '',
-        users: [],
-        documents: []
+        users: { id: '' }
+        // documents: { id: '', indexId: '' }
       },
       documentId: null,
+      userId: null,
       documents: [],
       users: [],
-      userId: null,
-      rules: {},
       sortedTypeOptions: [
-        { key: 1, display_name: '第一级' },
-        { key: 2, display_name: '第二级' },
-        { key: 3, display_name: '第三级' },
-        { key: 4, display_name: '第四级' },
-        { key: 5, display_name: '第五级' },
-        { key: 6, display_name: '第六级' }
+        { sortedkey: 1, display_name: '第一级' },
+        { sortedkey: 2, display_name: '第二级' },
+        { sortedkey: 3, display_name: '第三级' },
+        { sortedkey: 4, display_name: '第四级' },
+        { sortedkey: 5, display_name: '第五级' },
+        { sortedkey: 6, display_name: '第六级' }
       ],
-      auditStatusTypeOptions: [{ key: 1, display_name: '已审批' }, { key: 0, display_name: '审批中' }]
+      auditStatusTypeOptions: [{ key_name: 1, display_name: '已审批' }, { key_name: 0, display_name: '审批中' }],
+      rules: {
+        sorted: [{ required: true, message: '审批顺序不能为空', trigger: 'blur' }],
+        auditStatus: [{ required: true, message: '审批状态不能为空', trigger: 'blur' }]
+      }
     }
   },
   methods: {
@@ -88,6 +90,9 @@ export default {
       this.resetForm()
     },
     doSubmit() {
+      this.form.documentId = this.documentId.split('_')[1]
+      this.form.userId = this.userId
+      this.form.user = null
       this.$refs['form'].validate(valid => {
         if (valid) {
           if (this.documentId === null || this.documentId === undefined) {
@@ -95,19 +100,9 @@ export default {
               message: 'ID不能为空',
               type: 'warning'
             })
-          } else if (this.sorted === null || this.sorted === undefined) {
-            this.$message({
-              message: '审批顺序不能为空',
-              type: 'warning'
-            })
           } else if (this.userId === null || this.userId === undefined) {
             this.$message({
               message: '审批人不能为空',
-              type: 'warning'
-            })
-          } else if (this.auditStatus === null || this.auditStatus === undefined) {
-            this.$message({
-              message: '审批状态不能为空',
               type: 'warning'
             })
           } else {
@@ -158,23 +153,40 @@ export default {
     resetForm() {
       this.dialog = false
       this.$refs['form'].resetFields()
+      this.documentId = null
+      this.userId = null
       this.form = {
         id: '',
         documentId: '',
-        userId: '',
         sorted: '',
         auditStatus: '',
         source: '',
         createTime: '',
         updateTime: '',
         deleted: '',
-        users: [],
-        documents: []
+        users: { id: '' },
+        documents: { id: '' }
       }
     },
-    selectFun(node, instanceId) {
-      debugger
-      this.getAuditUsers(node.sorted, node.source)
+    selectSourceFun(node) {
+      if (node === null || node === undefined) {
+        return false
+      }
+      this.source = node.substring(0, 4) === '申请流程' ? 0 : 1
+      if (this.sorted === null || this.sorted === undefined) {
+        return false
+      }
+      this.getAuditUsers(this.sorted, this.source)
+    },
+    selectSortedFun(node) {
+      if (node === null || node === undefined) {
+        return false
+      }
+      this.sorted = node
+      if (this.source === null || this.source === undefined) {
+        return false
+      }
+      this.getAuditUsers(this.sorted, this.source)
     },
     getDocuments() {
       getAllDocuments()
@@ -187,7 +199,6 @@ export default {
     },
 
     getAuditUsers(sorted, source) {
-      debugger
       getAuditUsers({
         sorted: this.sorted,
         source: this.source

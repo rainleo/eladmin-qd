@@ -155,7 +155,7 @@ export default {
       this.$refs['form'].resetFields()
       this.deptId = null
       this.userId = null
-      this.accountingSubjectsId = []
+      this.accountingSubjectsId = null
       this.form = {
         status: '',
         dept: {

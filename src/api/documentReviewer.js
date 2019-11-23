@@ -31,3 +31,12 @@ export function getAllDocuments(params) {
     params
   })
 }
+
+// 查询所有禁用审批等级
+export function getDisableSorted(params) {
+  return request({
+    url: 'api/documentReviewer/allDisableSorted',
+    method: 'get',
+    params
+  })
+}

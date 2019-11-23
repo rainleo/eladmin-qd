@@ -12,8 +12,8 @@
         </el-select>
       </el-form-item>
       <el-form-item label="审批顺序" prop="sorted">
-        <el-select v-model="form.sorted" class="filter-item" style="width: 370px;" placeholder="请选择审批顺序" @change="selectSortedFun">
-          <el-option v-for="(item, index) in sortedTypeOptions" :key="item.display_name + index" :label="item.display_name" :value="item.sortedkey" />
+        <el-select v-model="form.sorted" clearable class="filter-item" style="width: 370px;" placeholder="请选择审批顺序" @change="selectSortedFun">
+          <el-option v-for="(item, index) in sortedTypeOptions" :key="item.display_name + index" :label="item.display_name" :value="item.sortedkey" :disabled="item.disabled" />
         </el-select>
       </el-form-item>
 
@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { add, edit, getAllDocuments } from '@/api/documentReviewer'
+import { add, edit, getAllDocuments, getDisableSorted } from '@/api/documentReviewer'
 import { getAuditUsers } from '@/api/auditChain'
 import { Select, Option } from 'element-ui'
 export default {
@@ -55,7 +55,6 @@ export default {
       dialog: false,
       form: {
         id: '',
-        // documentId: '',
         source: '',
         applicationUser: '',
         sorted: '',
@@ -64,19 +63,18 @@ export default {
         updateTime: '',
         deleted: '',
         users: { id: '' }
-        // documents: { id: '', indexId: '' }
       },
       documentId: null,
       userId: null,
       documents: [],
       users: [],
       sortedTypeOptions: [
-        { sortedkey: 1, display_name: '第一级' },
-        { sortedkey: 2, display_name: '第二级' },
-        { sortedkey: 3, display_name: '第三级' },
-        { sortedkey: 4, display_name: '第四级' },
-        { sortedkey: 5, display_name: '第五级' },
-        { sortedkey: 6, display_name: '第六级' }
+        { sortedkey: 1, display_name: '第一级', disabled: false },
+        { sortedkey: 2, display_name: '第二级', disabled: false },
+        { sortedkey: 3, display_name: '第三级', disabled: false },
+        { sortedkey: 4, display_name: '第四级', disabled: false },
+        { sortedkey: 5, display_name: '第五级', disabled: false },
+        { sortedkey: 6, display_name: '第六级', disabled: false }
       ],
       auditStatusTypeOptions: [{ key_name: 1, display_name: '已审批' }, { key_name: 0, display_name: '审批中' }],
       rules: {
@@ -90,9 +88,9 @@ export default {
       this.resetForm()
     },
     doSubmit() {
-      this.form.documentId = this.documentId.split('_')[1]
       this.form.userId = this.userId
       this.form.user = null
+      this.form.source = this.source
       this.$refs['form'].validate(valid => {
         if (valid) {
           if (this.documentId === null || this.documentId === undefined) {
@@ -168,16 +166,21 @@ export default {
         documents: { id: '' }
       }
     },
+
+    // 选择单据ID绑定@change事件
     selectSourceFun(node) {
-      if (node === null || node === undefined) {
-        return false
+      if (node != null || node !== undefined) {
+        this.source = node.substring(0, 4) === '申请流程' ? 0 : 1
+        // change时，审批顺序进行过滤————已审批等级禁用
+        const id = this.documentId.split('_')[1]
+        this.getDisableSorted(id, this.source)
+        if (this.sorted != null && this.sorted !== undefined) {
+          this.getAuditUsers(this.sorted, this.source)
+        }
       }
-      this.source = node.substring(0, 4) === '申请流程' ? 0 : 1
-      if (this.sorted === null || this.sorted === undefined) {
-        return false
-      }
-      this.getAuditUsers(this.sorted, this.source)
     },
+
+    // 选择审批顺序绑定@change事件
     selectSortedFun(node) {
       if (node === null || node === undefined) {
         return false
@@ -205,6 +208,27 @@ export default {
       })
         .then(res => {
           this.users = res
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
+    },
+    getDisableSorted(id, source) {
+      getDisableSorted({
+        documentId: id,
+        source: this.source
+      })
+        .then(res => {
+          if (res.length !== 0) {
+            for (var i = 0; i < this.sortedTypeOptions.length; i++) {
+              if (res.indexOf(this.sortedTypeOptions[i].sortedkey) > -1) {
+                this.sortedTypeOptions[i].disabled = true
+              } else {
+                // 这部分要还原
+                this.sortedTypeOptions[i].disabled = false
+              }
+            }
+          }
         })
         .catch(err => {
           console.log(err.response.data.message)

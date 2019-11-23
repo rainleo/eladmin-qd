@@ -177,6 +177,7 @@ export default {
       _this.userId = data.user.id
       _this.getDocuments()
       _this.getAuditUsers(_this.sorted, _this.source)
+      _this.getDisableSorted(_this.documentId, _this.source)
       _this.dialog = true
     }
   }

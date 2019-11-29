@@ -3,7 +3,10 @@
     <!--工具栏-->
     <div class="head-container">
       <!-- 搜索 -->
-      <el-input v-model="query.value" clearable placeholder="输入部门名称搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" />
+      <el-input v-model="query.value" clearable placeholder="输入搜索内容" style="width: 200px" class="filter-item" @keyup.enter.native="toQuery" />
+      <el-select v-model="query.type" clearable placeholder="类型" class="filter-item" style="width: 130px">
+        <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+      </el-select>
       <el-select v-model="query.enabled" clearable placeholder="状态" class="filter-item" style="width: 90px" @change="toQuery">
         <el-option v-for="item in enabledTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
@@ -48,6 +51,7 @@
           </i>
         </template>
       </el-table-column>
+      <el-table-column prop="createdByUser.username" label="创建人"/>
       <el-table-column prop="createTime" label="创建日期">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
@@ -89,6 +93,10 @@ export default {
           value: 'name'
         }
       ],
+      queryTypeOptions: [
+        { key: 'name', display_name: '部门名称' },
+        { key: 'userName', display_name: '创建人' }
+      ],
       enabledTypeOptions: [{ key: 'true', display_name: '正常' }, { key: 'false', display_name: '禁用' }],
       delLoading: false,
       expand: true,
@@ -111,10 +119,11 @@ export default {
       const sort = 'id,desc'
       this.params = { page: this.page, size: this.size, sort: sort }
       const query = this.query
+      const type = query.type
       const value = query.value
       const enabled = query.enabled
-      if (value) {
-        this.params['name'] = value
+      if (type && value) {
+        this.params[type] = value
       }
       if (enabled !== '' && enabled !== null) {
         this.params['enabled'] = enabled
@@ -144,6 +153,7 @@ export default {
       this.isAdd = true
       const _this = this.$refs.form
       _this.getDepts()
+      this.$refs.form.getUsers()
       _this.dialog = true
     },
     changeExpand() {
@@ -159,10 +169,13 @@ export default {
         id: data.id,
         name: data.name,
         pid: data.pid,
+        createdByUser: { id: data.createdByUser.id },
         createTime: data.createTime,
         enabled: data.enabled.toString(),
         deptDetailList: data.deptDetailList
       }
+      _this.createdBy = data.createdByUser.id
+      _this.getUsers()
       _this.dialog = true
     }
   }

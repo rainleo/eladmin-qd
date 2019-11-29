@@ -8,6 +8,11 @@
       <el-form-item v-if="form.pid !== 0" style="margin-bottom: 0px;" label="上级部门">
         <treeselect v-model="form.pid" :options="depts" style="width: 370px;" placeholder="选择上级类目" />
       </el-form-item>
+      <el-form-item label="创建人" prop="createdByUsers">
+        <el-select v-model="createdBy" style="width: 370px;" placeholder="请先选择创建人" filterable @focus="getUsers">
+          <el-option v-for="(item, index) in createdByUsers" :key="item.username + index" :label="item.username" :value="item.id" />
+        </el-select>
+      </el-form-item>
       <el-form-item v-model="form.deptDetailList" prop="deptDetailList" label="附件">
         <template slot-scope="scope">
           <el-upload
@@ -44,6 +49,7 @@
 <script>
 import checkPermission from '@/utils/permission'
 import { add, edit, getDepts } from '@/api/dept'
+import { getUsers } from '@/api/user'
 import { del } from '@/api/deptDetail'
 import { getToken } from '@/utils/auth'
 import { mapGetters } from 'vuex'
@@ -79,6 +85,8 @@ export default {
       deptDetailList: [],
       fileList: [{ name: '', url: '' }],
       files: [],
+      createdBy: '',
+      createdByUsers: [],
       rules: {
         name: [{ required: true, message: '请输入名称', trigger: 'blur' }]
       }
@@ -95,6 +103,8 @@ export default {
     },
     doSubmit() {
       this.form.deptDetailList = this.deptDetailList
+      this.form.createdBy = this.createdBy
+      this.form.createdByUser = null
       this.$refs['form'].validate(valid => {
         if (valid) {
           if (this.form.pid !== undefined) {
@@ -102,6 +112,11 @@ export default {
             if (this.isAdd) {
               this.doAdd()
             } else this.doEdit()
+          } else if (this.createdBy === null || this.createdBy === undefined) {
+            this.$message({
+              message: '创建人不能为空',
+              type: 'warning'
+            })
           } else {
             this.$message({
               message: '上级部门不能为空',
@@ -149,18 +164,32 @@ export default {
       this.dialog = false
       this.$refs['form'].resetFields()
       this.deptDetailList = []
+      this.createdBy = null
       this.form = {
         id: '',
         name: '',
         pid: 1,
         enabled: 'true',
-        deptDetailList: []
+        deptDetailList: [],
+        createdByUser: { id: '' }
       }
     },
     getDepts() {
       getDepts({ enabled: true }).then(res => {
         this.depts = res.content
       })
+    },
+    getUsers() {
+      getUsers({
+        enabled: true
+      })
+        .then(res => {
+          console.log(res)
+          this.createdByUsers = res.content
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
     },
     // +++++++++++++++++++++++++++++上传图片+++++++++++++++++++++++++++++++
     getFileList(deptDetailList) {

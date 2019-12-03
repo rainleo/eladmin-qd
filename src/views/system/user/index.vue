@@ -6,7 +6,7 @@
       <!--部门数据-->
       <el-col :xs="7" :sm="6" :md="4" :lg="4" :xl="4">
         <div class="head-container">
-          <el-input v-model="deptName" clearable placeholder="输入部门名称搜索" prefix-icon="el-icon-search" style="width: 100%;" class="filter-item" @input="getDeptDatas" />
+          <el-input v-model="deptName" clearable placeholder="输入公司名称搜索" prefix-icon="el-icon-search" style="width: 100%;" class="filter-item" @input="getDeptDatas" />
         </div>
         <el-tree :data="depts" :props="defaultProps" :expand-on-click-node="false" default-expand-all @node-click="handleNodeClick" />
       </el-col>
@@ -68,6 +68,7 @@
               <div>{{ scope.row.dept.name }} / {{ scope.row.job.name }}</div>
             </template>
           </el-table-column>
+          <el-table-column v-model="companyId" prop="company.name" label="公司"/>
           <el-table-column label="状态" align="center">
             <template slot-scope="scope">
               <div v-for="item in dicts" :key="item.id">
@@ -129,6 +130,9 @@ export default {
       deptName: '',
       depts: [],
       deptId: null,
+      companies: [],
+      companyId: null,
+      pid: null,
       defaultProps: {
         children: 'children',
         label: 'name'
@@ -173,12 +177,16 @@ export default {
       const type = query.type
       const value = query.value
       const enabled = query.enabled
+      const companyId = this.pid
       this.params = { page: this.page, size: this.size, sort: sort, deptId: this.deptId }
       if (type && value) {
         this.params[type] = value
       }
       if (enabled !== '' && enabled !== null) {
         this.params['enabled'] = enabled
+      }
+      if (companyId !== '' && companyId !== null) {
+        this.params['companyId'] = companyId
       }
       return true
     },
@@ -213,6 +221,7 @@ export default {
       })
     },
     handleNodeClick(data) {
+      this.pid = data.pid
       if (data.pid === 0) {
         this.deptId = null
       } else {
@@ -223,13 +232,13 @@ export default {
     add() {
       this.isAdd = true
       this.$refs.form.getDepts()
+      this.$refs.form.getCompanies()
       this.$refs.form.getRoles()
       this.$refs.form.getRoleLevel()
       this.$refs.form.dialog = true
     },
     // 导出
     download() {
-      debugger
       this.downloadLoading = true
       import('@/utils/export2Excel').then(excel => {
         const tHeader = ['ID', '用户名', '邮箱', '头像地址', '状态', '注册日期', '最后修改密码日期']
@@ -259,10 +268,9 @@ export default {
     },
     // 模板下载
     downloadTemplate() {
-      debugger
       this.downloadTemplateLoading = true
       import('@/utils/export2Excel').then(excel => {
-        const tTemplateHeader = ['用户名', '手机号', '邮箱', '部门', '职位']
+        const tTemplateHeader = ['公司', '用户名', '手机号', '邮箱', '部门', '职位']
         const templatedata = []
         excel.export_json_to_excel({
           header: tTemplateHeader,
@@ -276,7 +284,6 @@ export default {
       this.isAdd = false
       const _this = this.$refs.form
       _this.getRoles()
-      _this.getDepts()
       _this.getRoleLevel()
       _this.roleIds = []
       _this.form = {
@@ -287,13 +294,17 @@ export default {
         enabled: data.enabled.toString(),
         roles: [],
         dept: { id: data.dept.id },
-        job: { id: data.job.id }
+        job: { id: data.job.id },
+        company: { id: data.company.pid }
       }
       data.roles.forEach(function(data, index) {
         _this.roleIds.push(data.id)
       })
       _this.deptId = data.dept.id
       _this.jobId = data.job.id
+      _this.companyId = data.company.id
+      _this.getCompanies()
+      _this.getDepts(_this.companyId)
       _this.getJobs(_this.deptId)
       _this.dialog = true
     },

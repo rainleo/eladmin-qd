@@ -107,22 +107,24 @@ export default {
       this.form.createdByUser = null
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.form.pid !== undefined) {
-            this.loading = true
-            if (this.isAdd) {
-              this.doAdd()
-            } else this.doEdit()
-          } else if (this.createdBy === null || this.createdBy === undefined) {
+          if (this.form.pid === undefined) {
+            this.$message({
+              message: '上级部门不能为空',
+              type: 'warning'
+            })
+          } else if (this.createdBy === '' || this.createdBy === undefined) {
             this.$message({
               message: '创建人不能为空',
               type: 'warning'
             })
           } else {
-            this.$message({
-              message: '上级部门不能为空',
-              type: 'warning'
-            })
+            this.loading = true
+            if (this.isAdd) {
+              this.doAdd()
+            } else this.doEdit()
           }
+        } else {
+          return false
         }
       })
     },

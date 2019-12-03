@@ -1,38 +1,30 @@
 <template>
-  <el-dialog :visible.sync="dialog" :title="isAdd ? '新增用户' : '编辑用户'" append-to-body width="570px">
+  <el-dialog :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增用户' : '编辑用户'" append-to-body width="570px">
     <el-form ref="form" :inline="true" :model="form" :rules="rules" size="small" label-width="66px">
-      <el-form-item label="用户名" prop="username">
-        <el-input v-model="form.username"/>
-      </el-form-item>
+      <el-form-item label="用户名" prop="username"><el-input v-model="form.username" /></el-form-item>
       <el-form-item label="状态" prop="enabled">
         <el-radio v-for="item in dicts" :key="item.id" v-model="form.enabled" :label="item.value">{{ item.label }}</el-radio>
       </el-form-item>
-      <el-form-item label="电话" prop="phone">
-        <el-input v-model.number="form.phone" />
-      </el-form-item>
-      <el-form-item label="邮箱" prop="email">
-        <el-input v-model="form.email" />
+      <el-form-item label="电话" prop="phone"><el-input v-model.number="form.phone" /></el-form-item>
+      <el-form-item label="邮箱" prop="email"><el-input v-model="form.email" /></el-form-item>
+      <el-form-item label="公司">
+        <el-select v-model="companyId" :style="style" clearable class="filter-item" placeholder="请选择公司" @change="selectCompanyFun">
+          <el-option v-for="(item, index) in companies" :key="item.name + index" :label="item.name" :value="item.id" />
+        </el-select>
       </el-form-item>
       <el-form-item label="部门">
-        <treeselect v-model="deptId" :options="depts" :style="style" placeholder="选择部门" @select="selectFun" />
+        <el-select v-model="deptId" :style="style" clearable class="filter-item" placeholder="请先选择公司" @change="selectDeptFun">
+          <el-option v-for="(item, index) in depts" :key="item.id + index" :label="item.name" :value="item.id" />
+        </el-select>
       </el-form-item>
       <el-form-item label="岗位">
-        <el-select v-model="jobId" :style="style" placeholder="请先选择部门">
-          <el-option
-            v-for="(item, index) in jobs"
-            :key="item.name + index"
-            :label="item.name"
-            :value="item.id"/>
+        <el-select v-model="jobId" :style="style" clearable class="filter-item" placeholder="请先选择部门">
+          <el-option v-for="(item, index) in jobs" :key="item.name + index" :label="item.name" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-form-item style="margin-bottom: 0px;" label="角色">
         <el-select v-model="roleIds" style="width: 450px;" multiple placeholder="请选择">
-          <el-option
-            v-for="(item, index) in roles"
-            :disabled="level !== 1 && item.level <= level"
-            :key="item.name + index"
-            :label="item.name"
-            :value="item.id"/>
+          <el-option v-for="(item, index) in roles" :disabled="level !== 1 && item.level <= level" :key="item.name + index" :label="item.name" :value="item.id" />
         </el-select>
       </el-form-item>
     </el-form>
@@ -44,7 +36,6 @@
 </template>
 
 <script>
-
 import { add, edit } from '@/api/user'
 import { getDepts } from '@/api/dept'
 import { getAll, getLevel } from '@/api/role'
@@ -74,23 +65,24 @@ export default {
       }
     }
     return {
-      dialog: false, loading: false, form: { username: '', email: '', enabled: 'false', roles: [], job: { id: '' }, dept: { id: '' }, phone: null },
-      roleIds: [], roles: [], depts: [], deptId: null, jobId: null, jobs: [], style: 'width: 184px', level: 3,
+      dialog: false,
+      loading: false,
+      form: { username: '', email: '', enabled: 'false', roles: [], job: { id: '' }, dept: { id: '' }, phone: null },
+      roleIds: [],
+      roles: [],
+      depts: [],
+      deptId: null,
+      jobId: null,
+      jobs: [],
+      style: 'width: 184px',
+      level: 3,
+      companies: [],
+      companyId: null,
       rules: {
-        username: [
-          { required: true, message: '请输入用户名', trigger: 'blur' },
-          { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
-        ],
-        email: [
-          { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-          { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
-        ],
-        phone: [
-          { required: true, trigger: 'blur', validator: validPhone }
-        ],
-        enabled: [
-          { required: true, message: '状态不能为空', trigger: 'blur' }
-        ]
+        username: [{ required: true, message: '请输入用户名', trigger: 'blur' }, { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }],
+        email: [{ required: true, message: '请输入邮箱地址', trigger: 'blur' }, { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }],
+        phone: [{ required: true, trigger: 'blur', validator: validPhone }],
+        enabled: [{ required: true, message: '状态不能为空', trigger: 'blur' }]
       }
     }
   },
@@ -107,11 +99,20 @@ export default {
       this.resetForm()
     },
     doSubmit() {
-      this.form.dept.id = this.deptId
-      this.form.job.id = this.jobId
-      this.$refs['form'].validate((valid) => {
+      this.form.deptId = this.deptId
+      this.form.jobId = this.jobId
+      this.form.companyId = this.companyId
+      this.form.dept = null
+      this.form.company = null
+      this.form.job = null
+      this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.deptId === null || this.deptId === undefined) {
+          if (this.companyId === null || this.companyId === undefined) {
+            this.$message({
+              message: '公司不能为空',
+              type: 'warning'
+            })
+          } else if (this.deptId === null || this.deptId === undefined) {
             this.$message({
               message: '部门不能为空',
               type: 'warning'
@@ -144,81 +145,100 @@ export default {
       })
     },
     doAdd() {
-      add(this.form).then(res => {
-        this.resetForm()
-        this.$notify({
-          title: '添加成功',
-          message: '默认密码：123456',
-          type: 'success',
-          duration: 2500
+      add(this.form)
+        .then(res => {
+          this.resetForm()
+          this.$notify({
+            title: '添加成功',
+            message: '默认密码：123456',
+            type: 'success',
+            duration: 2500
+          })
+          this.loading = false
+          this.$parent.init()
         })
-        this.loading = false
-        this.$parent.init()
-      }).catch(err => {
-        this.loading = false
-        console.log(err.response.data.message)
-      })
+        .catch(err => {
+          this.loading = false
+          console.log(err.response.data.message)
+        })
     },
     doEdit() {
-      edit(this.form).then(res => {
-        this.resetForm()
-        this.$notify({
-          title: '修改成功',
-          type: 'success',
-          duration: 2500
+      edit(this.form)
+        .then(res => {
+          this.resetForm()
+          this.$notify({
+            title: '修改成功',
+            type: 'success',
+            duration: 2500
+          })
+          this.loading = false
+          this.$parent.init()
         })
-        this.loading = false
-        this.$parent.init()
-      }).catch(err => {
-        this.loading = false
-        console.log(err.response.data.message)
-      })
+        .catch(err => {
+          this.loading = false
+          console.log(err.response.data.message)
+        })
     },
     resetForm() {
       this.dialog = false
       this.$refs['form'].resetFields()
       this.deptId = null
       this.jobId = null
+      this.companyId = null
       this.roleIds = []
-      this.form = { username: '', email: '', enabled: 'false', roles: [], job: { id: '' }, dept: { id: '' }, phone: null }
+      this.form = { username: '', email: '', enabled: 'false', roles: [], job: { id: '' }, dept: { id: '' }, company: { id: '' }, phone: null }
     },
     getRoles() {
-      getAll().then(res => {
-        this.roles = res
-      }).catch(err => {
-        console.log(err.response.data.message)
-      })
+      getAll()
+        .then(res => {
+          this.roles = res
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
     },
     getJobs(id) {
-      getAllJob(id).then(res => {
-        this.jobs = res.content
-      }).catch(err => {
-        console.log(err.response.data.message)
+      getAllJob(id)
+        .then(res => {
+          this.jobs = res.content
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
+    },
+    getDepts(id) {
+      getDepts({ enabled: true, pid: id }).then(res => {
+        this.depts = res.content
       })
     },
-    getDepts() {
-      getDepts({ enabled: true }).then(res => {
-        this.depts = res.content
+    getCompanies() {
+      getDepts({ enabled: true, pid: 1 }).then(res => {
+        this.companies = res.content
       })
     },
     isvalidPhone(str) {
       const reg = /^1[3|4|5|7|8][0-9]\d{8}$/
       return reg.test(str)
     },
-    selectFun(node, instanceId) {
-      this.getJobs(node.id)
+    selectCompanyFun(node) {
+      this.getDepts(node)
+      this.deptId = null
+    },
+    selectDeptFun(node) {
+      this.getJobs(node)
+      this.jobId = null
     },
     getRoleLevel() {
-      getLevel().then(res => {
-        this.level = res.level
-      }).catch(err => {
-        console.log(err.response.data.message)
-      })
+      getLevel()
+        .then(res => {
+          this.level = res.level
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
     }
   }
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

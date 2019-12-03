@@ -9,17 +9,17 @@
       <el-form-item label="邮箱" prop="email"><el-input v-model="form.email" /></el-form-item>
       <el-form-item label="公司">
         <el-select v-model="companyId" :style="style" clearable class="filter-item" placeholder="请选择公司" @change="selectCompanyFun">
-          <el-option v-for="(item, index) in companies" :key="item.name + index" :label="item.name" :value="item.id" />
+          <el-option v-for="(item, index) in companies" :key="item.name + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
         </el-select>
       </el-form-item>
       <el-form-item label="部门">
         <el-select v-model="deptId" :style="style" clearable class="filter-item" placeholder="请先选择公司" @change="selectDeptFun">
-          <el-option v-for="(item, index) in depts" :key="item.id + index" :label="item.name" :value="item.id" />
+          <el-option v-for="(item, index) in depts" :key="item.id + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
         </el-select>
       </el-form-item>
       <el-form-item label="岗位">
         <el-select v-model="jobId" :style="style" clearable class="filter-item" placeholder="请先选择部门">
-          <el-option v-for="(item, index) in jobs" :key="item.name + index" :label="item.name" :value="item.id" />
+          <el-option v-for="(item, index) in jobs" :key="item.name + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
         </el-select>
       </el-form-item>
       <el-form-item style="margin-bottom: 0px;" label="角色">
@@ -201,20 +201,43 @@ export default {
       getAllJob(id)
         .then(res => {
           this.jobs = res.content
+          for (var i = 0; i < this.jobs.length; i++) {
+            if (!this.jobs[i].enabled) {
+              this.jobs[i].disabled = true
+            }
+          }
         })
         .catch(err => {
           console.log(err.response.data.message)
         })
     },
     getDepts(id) {
-      getDepts({ enabled: true, pid: id }).then(res => {
-        this.depts = res.content
-      })
+      getDepts({ pid: id })
+        .then(res => {
+          this.depts = res.content
+          for (var i = 0; i < this.depts.length; i++) {
+            if (!this.depts[i].enabled) {
+              this.depts[i].disabled = true
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
     },
     getCompanies() {
-      getDepts({ enabled: true, pid: 1 }).then(res => {
-        this.companies = res.content
-      })
+      getDepts({ pid: 1 })
+        .then(res => {
+          this.companies = res.content
+          for (var i = 0; i < this.companies.length; i++) {
+            if (!this.companies[i].enabled) {
+              this.companies[i].disabled = true
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
     },
     isvalidPhone(str) {
       const reg = /^1[3|4|5|7|8][0-9]\d{8}$/

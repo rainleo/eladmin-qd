@@ -63,12 +63,12 @@
           <el-table-column prop="username" label="用户名" />
           <el-table-column prop="phone" label="电话" />
           <el-table-column :show-overflow-tooltip="true" prop="email" label="邮箱" />
-          <el-table-column label="部门 / 岗位">
+          <el-table-column label="部门 / 岗位" prop="deptName">
             <template slot-scope="scope">
               <div>{{ scope.row.dept.name }} / {{ scope.row.job.name }}</div>
             </template>
           </el-table-column>
-          <el-table-column v-model="companyId" prop="company.name" label="公司"/>
+          <el-table-column v-model="companyId" prop="companyName" label="公司" />
           <el-table-column label="状态" align="center">
             <template slot-scope="scope">
               <div v-for="item in dicts" :key="item.id">
@@ -241,9 +241,10 @@ export default {
     download() {
       this.downloadLoading = true
       import('@/utils/export2Excel').then(excel => {
-        const tHeader = ['ID', '用户名', '邮箱', '头像地址', '状态', '注册日期', '最后修改密码日期']
-        const filterVal = ['id', 'username', 'email', 'avatar', 'enabled', 'createTime', 'lastPasswordResetTime']
+        const tHeader = ['ID', '用户名', '邮箱', '头像地址', '岗位', '部门', '公司', '状态', '注册日期', '最后修改密码日期']
+        const filterVal = ['id', 'username', 'email', 'avatar', 'jobName', 'deptName', 'companyName', 'enabled', 'createTime', 'lastPasswordResetTime']
         const data = this.formatJson(filterVal, this.data)
+        debugger
         excel.export_json_to_excel({
           header: tHeader,
           data,

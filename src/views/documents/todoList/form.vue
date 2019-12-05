@@ -1,6 +1,11 @@
 <template>
   <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="520px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="120px">
+      <el-form-item label="公司">
+        <el-select v-model="companyId" style="width: 350px;" clearable class="filter-item" placeholder="请选择公司" @change="selectCompanyFun">
+          <el-option v-for="(item, index) in companies" :key="item.name + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="摘要" prop="todoAbstract"><el-input v-model.trim="form.todoAbstract" style="width: 350px;" /></el-form-item>
       <el-form-item label="预期完成时间" prop="expectedCompletionTime" style="width: 350px;">
         <template>
@@ -8,12 +13,12 @@
         </template>
       </el-form-item>
       <el-form-item label="抄送人" prop="copyPerson">
-        <el-select v-model="copyPersonId" style="width: 350px;" placeholder="请选择抄送人" filterable @focus="getUsers">
+        <el-select v-model="copyPersonId" style="width: 350px;" placeholder="请选择抄送人" >
           <el-option v-for="(item, index) in copyPerson" :key="item.username + index" :label="item.username" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="协助人员" prop="assistantPerson">
-        <el-select v-model="assistantPersonId" style="width: 350px;" placeholder="请选择协助人员" filterable @focus="getUsers">
+        <el-select v-model="assistantPersonId" style="width: 350px;" placeholder="请选择协助人员" >
           <el-option v-for="(item, index) in assistantPerson" :key="item.username + index" :label="item.username" :value="item.id" />
         </el-select>
       </el-form-item>
@@ -35,6 +40,7 @@
 
 <script>
 import { add, edit } from '@/api/todoList'
+import { getDepts } from '@/api/dept'
 import { getUsers } from '@/api/user'
 
 export default {
@@ -58,6 +64,8 @@ export default {
       assistantPersonId: null,
       copyPerson: [],
       assistantPerson: [],
+      companies: [],
+      companyId: null,
       rules: {
         todoAbstract: [{ required: true, message: '摘要不能为空', trigger: 'blur' }],
         expectedCompletionTime: [{ required: true, message: '预期完成时间不能为空', trigger: 'blur' }],
@@ -99,14 +107,21 @@ export default {
       this.resetForm()
     },
     doSubmit() {
+      this.form.companyId = this.companyId
       this.form.copyPersonId = this.copyPersonId
       this.form.assistantPersonId = this.assistantPersonId
       // 置空，防止关联的user对象不为空，关联修改数据库报错
+      this.form.company = null
       this.form.copyPerson = null
       this.form.assistantPerson = null
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.copyPersonId === null || this.copyPersonId === undefined) {
+          if (this.companyId === null || this.companyId === undefined) {
+            this.$message({
+              message: '公司不能为空',
+              type: 'warning'
+            })
+          } else if (this.copyPersonId === null || this.copyPersonId === undefined) {
             this.$message({
               message: '抄送人不能为空',
               type: 'warning'
@@ -160,19 +175,43 @@ export default {
       this.dialog = false
       this.$refs['form'].resetFields()
       this.copyPersonId = null
-      this.copyPersonId = null
+      this.assistantPersonId = null
+      this.companyId = null
+      this.copyPerson = []
+      this.assistantPerson = []
       this.form = {
         status: '',
         todoAbstract: '',
         expectedCompletionTime: '',
+        company: {
+          id: ''
+        },
         copyPerson: {
+          id: ''
+        },
+        assistantPerson: {
           id: ''
         },
         content: ''
       }
     },
-    getUsers() {
+    getCompanies() {
+      getDepts({ pid: 1 })
+        .then(res => {
+          this.companies = res.content
+          for (var i = 0; i < this.companies.length; i++) {
+            if (!this.companies[i].enabled) {
+              this.companies[i].disabled = true
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
+    },
+    getUsers(id) {
       getUsers({
+        companyId: id,
         enabled: true
       })
         .then(res => {
@@ -182,6 +221,11 @@ export default {
         .catch(err => {
           console.log(err.response.data.message)
         })
+    },
+    selectCompanyFun(node) {
+      this.getUsers(node)
+      this.copyPersonId = null
+      this.assistantPersonId = null
     }
   }
 }

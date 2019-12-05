@@ -3,6 +3,7 @@
     <!--工具栏-->
     <div class="head-container">
       <!-- 搜索 -->
+      <el-input v-model="query.companyName" clearable placeholder="输入公司" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" />
       <el-input v-model="query.value" clearable placeholder="输入搜索内容" style="width: 200px" class="filter-item" @keyup.enter.native="toQuery" />
       <el-select v-model="query.type" clearable placeholder="类型" class="filter-item" style="width: 130px">
         <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
@@ -31,7 +32,8 @@
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%">
       <el-table-column prop="id" label="主键ID" width="60px" />
       <el-table-column prop="applicationNo" label="申请单号" width="150px" />
-      <el-table-column prop="dept.name" label="部门" />
+      <el-table-column v-model="companyId" prop="company.name" label="公司" />
+      <el-table-column v-model="deptId" prop="dept.name" label="部门" />
       <el-table-column prop="user.username" label="申请人" />
       <el-table-column prop="accountingSubjects.subjectName" label="申请事项" />
       <el-table-column prop="applicationDescription" label="事项描述" />
@@ -107,6 +109,10 @@ export default {
   data() {
     return {
       delLoading: false,
+      companies: [],
+      companyId: null,
+      depts: [],
+      deptId: null,
       queryTypeOptions: [
         { key: 'id', display_name: '主键ID' },
         { key: 'applicationNo', display_name: '申请单号' },
@@ -137,6 +143,10 @@ export default {
       const type = query.type
       const value = query.value
       const status = query.status
+      const companyName = query.companyName
+      if (companyName) {
+        this.params['companyName'] = query.companyName
+      }
       if (type && value) {
         this.params[type] = value
       }
@@ -169,7 +179,7 @@ export default {
       this.isAdd = true
       this.$refs.form.dialog = true
       // index定义传递给form,form写实现
-      this.$refs.form.getDepts()
+      this.$refs.form.getCompanies()
     },
     edit(data) {
       this.isAdd = false
@@ -182,14 +192,19 @@ export default {
         user: { id: data.user.id },
         accountingSubjects: { id: data.accountingSubjects.id },
         applicationDescription: data.applicationDescription,
-        amount: data.amount
+        amount: data.amount,
+        company: { id: data.company.pid }
       }
+      _this.companyId = data.company.id
       _this.deptId = data.dept.id
       _this.userId = data.user.id
       _this.accountingSubjectsId = data.accountingSubjects.id
       // index定义传递给form,form写实现
-      _this.getDepts()
+      _this.getCompanies()
+      _this.getDepts(_this.companyId)
+      _this.getAccountingSubjects(_this.companyId)
       _this.getUsers(_this.deptId)
+      _this.getAccountingSubjects(_this.companyId)
       _this.dialog = true
     }
   }

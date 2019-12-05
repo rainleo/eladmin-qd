@@ -1,10 +1,19 @@
 <template>
   <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
-      <el-form-item label="部门" prop="depts"><treeselect v-model="deptId" :options="depts" style="width: 370px;" placeholder="选择部门" @select="selectFun" /></el-form-item>
+      <el-form-item label="公司">
+        <el-select v-model="companyId" :style="style" clearable class="filter-item" placeholder="请选择公司" style="width: 370px;" @change="selectCompanyFun">
+          <el-option v-for="(item, index) in companies" :key="item.name + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="部门">
+        <el-select v-model="deptId" :style="style" clearable class="filter-item" placeholder="请先选择公司" style="width: 370px;" @change="selectDeptFun">
+          <el-option v-for="(item, index) in depts" :key="item.id + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="申请人" prop="users">
         <el-select v-model="userId" style="width: 370px;" placeholder="请先选择部门">
-          <el-option v-for="(item, index) in users" :key="item.username + index" :label="item.username" :value="item.id" />
+          <el-option v-for="(item, index) in users" :key="item.id + index" :label="item.username" :value="item.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="状态" prop="status">
@@ -16,8 +25,8 @@
       </el-form-item>
       <el-form-item label="申请事项" prop="accountingSubjects">
         <template>
-          <el-select v-model="accountingSubjectsId" placeholder="请选择" style="width: 370px;" filterable @focus="getAccountingSubjects">
-            <el-option v-for="(item, index) in accountingSubjects" :key="item.subjectName + index" :label="item.subjectName" :value="item.id" />
+          <el-select v-model="accountingSubjectsId" placeholder="请先选择公司" style="width: 370px;" >
+            <el-option v-for="(item, index) in accountingSubjects" :key="item.id + index" :label="item.subjectName" :value="item.id" />
           </el-select>
         </template>
       </el-form-item>
@@ -66,6 +75,8 @@ export default {
       },
       depts: [],
       deptId: null,
+      companies: [],
+      companyId: null,
       userId: null,
       users: [],
       accountingSubjectsId: null,
@@ -84,13 +95,20 @@ export default {
     doSubmit() {
       this.form.deptId = this.deptId
       this.form.userId = this.userId
+      this.form.companyId = this.companyId
       this.form.accountingSubjectsId = this.accountingSubjectsId
       this.form.user = null
       this.form.dept = null
+      this.form.company = null
       this.form.accountingSubjects = null
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.deptId === null || this.deptId === undefined) {
+          if (this.companyId === null || this.companyId === undefined) {
+            this.$message({
+              message: '公司不能为空',
+              type: 'warning'
+            })
+          } else if (this.deptId === null || this.deptId === undefined) {
             this.$message({
               message: '部门不能为空',
               type: 'warning'
@@ -156,9 +174,16 @@ export default {
       this.deptId = null
       this.userId = null
       this.accountingSubjectsId = null
+      this.companyId = null
+      this.depts = []
+      this.users = []
+      this.accountingSubjects = []
       this.form = {
         status: '',
         dept: {
+          id: ''
+        },
+        company: {
           id: ''
         },
         user: {
@@ -171,8 +196,8 @@ export default {
         amount: null
       }
     },
-    getAccountingSubjects() {
-      getAccountingSubjects({ deleted: 0 })
+    getAccountingSubjects(id) {
+      getAccountingSubjects({ deleted: 0, companyId: id })
         .then(res => {
           this.accountingSubjects = res.content
         })
@@ -182,7 +207,7 @@ export default {
     },
     getUsers(id) {
       getUsers({
-        deptId: this.id,
+        deptId: id,
         enabled: true
       })
         .then(res => {
@@ -192,17 +217,47 @@ export default {
           console.log(err.response.data.message)
         })
     },
-    getDepts() {
-      getDepts({ enabled: true }).then(res => {
-        this.depts = res.content
-      })
+    getDepts(id) {
+      getDepts({ pid: id })
+        .then(res => {
+          this.depts = res.content
+          for (var i = 0; i < this.depts.length; i++) {
+            if (!this.depts[i].enabled) {
+              this.depts[i].disabled = true
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
+    },
+    getCompanies() {
+      getDepts({ pid: 1 })
+        .then(res => {
+          this.companies = res.content
+          for (var i = 0; i < this.companies.length; i++) {
+            if (!this.companies[i].enabled) {
+              this.companies[i].disabled = true
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
     },
     isvalidAmount(str) {
       const reg = /(^[1-9](\d+)?(\.\d{1,2})?$)|(^0$)|(^\d\.\d{1,2}$)/
       return reg.test(str)
     },
-    selectFun(node, instanceId) {
-      this.getUsers(node.id)
+    selectCompanyFun(node) {
+      this.getDepts(node)
+      this.getAccountingSubjects(node)
+      this.deptId = null
+      this.accountingSubjectsId = null
+    },
+    selectDeptFun(node) {
+      this.getUsers(node)
+      this.userId = null
     }
   }
 }

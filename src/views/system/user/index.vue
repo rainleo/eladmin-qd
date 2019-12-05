@@ -178,15 +178,19 @@ export default {
       const value = query.value
       const enabled = query.enabled
       const companyId = this.pid
-      this.params = { page: this.page, size: this.size, sort: sort, deptId: this.deptId }
+      const deptId = this.deptId
+      this.params = { page: this.page, size: this.size, sort: sort }
       if (type && value) {
         this.params[type] = value
       }
-      if (enabled !== '' && enabled !== null) {
+      if (enabled) {
         this.params['enabled'] = enabled
       }
-      if (companyId !== '' && companyId !== null) {
+      if (companyId) {
         this.params['companyId'] = companyId
+      }
+      if (deptId) {
+        this.params['deptId'] = deptId
       }
       return true
     },
@@ -231,7 +235,6 @@ export default {
     },
     add() {
       this.isAdd = true
-      this.$refs.form.getDepts()
       this.$refs.form.getCompanies()
       this.$refs.form.getRoles()
       this.$refs.form.getRoleLevel()

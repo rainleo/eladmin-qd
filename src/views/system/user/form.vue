@@ -185,6 +185,8 @@ export default {
       this.deptId = null
       this.jobId = null
       this.companyId = null
+      this.depts = []
+      this.jobs = []
       this.roleIds = []
       this.form = { username: '', email: '', enabled: 'false', roles: [], job: { id: '' }, dept: { id: '' }, company: { id: '' }, phone: null }
     },
@@ -212,7 +214,7 @@ export default {
         })
     },
     getDepts(id) {
-      getDepts({ pid: id })
+      getDepts({ pid: id === null ? -1 : id })
         .then(res => {
           this.depts = res.content
           for (var i = 0; i < this.depts.length; i++) {

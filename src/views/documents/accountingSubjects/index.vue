@@ -3,6 +3,8 @@
     <!--工具栏-->
     <div class="head-container">
       <!-- 搜索 -->
+      <!--公司数据-->
+      <el-input v-model="query.companyName" clearable placeholder="输入公司" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" />
       <el-input v-model="query.value" clearable placeholder="输入搜索内容" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" />
       <el-select v-model="query.type" clearable placeholder="类型" class="filter-item" style="width: 130px">
         <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
@@ -20,6 +22,7 @@
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%;">
       <!-- <el-table-column prop="id" label="主键ID"/> -->
+      <el-table-column v-model="companyId" prop="company.name" label="公司" />
       <el-table-column prop="subjectCode" label="科目代码" />
       <el-table-column prop="subjectName" label="科目名称" />
       <el-table-column prop="auxiliaryAccountType" label="辅助账类型" />
@@ -72,6 +75,8 @@ export default {
   data() {
     return {
       delLoading: false,
+      companies: [],
+      companyId: null,
       queryTypeOptions: [
         // { key: 'id', display_name: '自增主键ID' },
         { key: 'subjectCode', display_name: '科目代码' },
@@ -98,8 +103,12 @@ export default {
       const query = this.query
       const type = query.type
       const value = query.value
+      const companyName = query.companyName
       if (type && value) {
         this.params[type] = value
+      }
+      if (companyName) {
+        this.params['companyName'] = query.companyName
       }
       return true
     },
@@ -137,8 +146,11 @@ export default {
         auxiliaryAccountType: data.auxiliaryAccountType,
         itemDetails: data.itemDetails,
         createTime: data.createTime,
-        updatetime: data.updatetime
+        updatetime: data.updatetime,
+        company: { id: data.company.pid }
       }
+      _this.companyId = data.company.id
+      _this.getCompanies()
       _this.dialog = true
     }
   }

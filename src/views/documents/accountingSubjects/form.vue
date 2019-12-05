@@ -1,6 +1,11 @@
 <template>
   <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
-    <el-form ref="form" :model="form" :rules="rules" size="small" label-width="90px">
+    <el-form ref="form" :model="form" :rules="rules" size="small" label-width="100px">
+      <el-form-item label="公司">
+        <el-select v-model="companyId" :style="style" clearable class="filter-item" placeholder="请选择公司" @change="selectCompanyFun">
+          <el-option v-for="(item, index) in companies" :key="item.name + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="科目代码" prop="subjectCode"><el-input v-model.trim="form.subjectCode" style="width: 370px;" /></el-form-item>
       <el-form-item label="科目名称" prop="subjectName"><el-input v-model.trim="form.subjectName" style="width: 370px;" /></el-form-item>
       <el-form-item label="辅助账类型" prop="auxiliaryAccountType"><el-input v-model.trim="form.auxiliaryAccountType" style="width: 370px;" /></el-form-item>
@@ -15,6 +20,7 @@
 
 <script>
 import { add, edit } from '@/api/accountingSubjects'
+import { getDepts } from '@/api/dept'
 export default {
   props: {
     isAdd: {
@@ -35,6 +41,8 @@ export default {
         createTime: '',
         updatetime: ''
       },
+      companies: [],
+      companyId: null,
       rules: {
         subjectCode: [{ required: true, message: '科目代码不能为空', trigger: 'blur' }],
         subjectName: [{ required: true, message: '科目名称不能为空', trigger: 'blur' }],
@@ -48,12 +56,21 @@ export default {
       this.resetForm()
     },
     doSubmit() {
+      this.form.companyId = this.companyId
+      this.form.company = null
       this.$refs['form'].validate(valid => {
         if (valid) {
-          this.loading = true
-          if (this.isAdd) {
-            this.doAdd()
-          } else this.doEdit()
+          if (this.companyId === null || this.companyId === undefined) {
+            this.$message({
+              message: '公司不能为空',
+              type: 'warning'
+            })
+          } else {
+            this.loading = true
+            if (this.isAdd) {
+              this.doAdd()
+            } else this.doEdit()
+          }
         } else {
           return false
         }
@@ -103,8 +120,24 @@ export default {
         auxiliaryAccountType: '',
         itemDetails: '',
         createTime: '',
-        updatetime: ''
+        updatetime: '',
+        company: { id: '' }
       }
+      this.companyId = null
+    },
+    getCompanies() {
+      getDepts({ pid: 1 })
+        .then(res => {
+          this.companies = res.content
+          for (var i = 0; i < this.companies.length; i++) {
+            if (!this.companies[i].enabled) {
+              this.companies[i].disabled = true
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
     }
   }
 }

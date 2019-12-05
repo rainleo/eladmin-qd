@@ -2,7 +2,7 @@
   <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="100px">
       <el-form-item label="公司">
-        <el-select v-model="companyId" :style="style" clearable class="filter-item" placeholder="请选择公司" @change="selectCompanyFun">
+        <el-select v-model="companyId" :style="style" clearable class="filter-item" placeholder="请选择公司" style="width: 370px;">
           <el-option v-for="(item, index) in companies" :key="item.name + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
         </el-select>
       </el-form-item>

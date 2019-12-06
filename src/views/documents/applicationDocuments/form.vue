@@ -2,30 +2,30 @@
   <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
       <el-form-item label="公司">
-        <el-select v-model="companyId" :style="style" clearable class="filter-item" placeholder="请选择公司" style="width: 370px;" @change="selectCompanyFun">
+        <el-select v-model="companyId" clearable class="filter-item" placeholder="请选择公司" style="width: 370px;" @change="selectCompanyFun">
           <el-option v-for="(item, index) in companies" :key="item.name + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
         </el-select>
       </el-form-item>
       <el-form-item label="部门">
-        <el-select v-model="deptId" :style="style" clearable class="filter-item" placeholder="请先选择公司" style="width: 370px;" @change="selectDeptFun">
+        <el-select v-model="deptId" clearable class="filter-item" placeholder="请先选择公司" style="width: 370px;" @change="selectDeptFun">
           <el-option v-for="(item, index) in depts" :key="item.id + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
         </el-select>
       </el-form-item>
       <el-form-item label="申请人" prop="users">
         <el-select v-model="userId" style="width: 370px;" placeholder="请先选择部门">
-          <el-option v-for="(item, index) in users" :key="item.id + index" :label="item.username" :value="item.id" />
+          <el-option v-for="(item, index) in users" :key="item.id + index" :label="item.username" :value="item.id" :disabled="item.disabled" />
         </el-select>
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <template>
-          <el-select v-model="form.status" placeholder="请选择" style="width: 370px;" filterable>
+          <el-select v-model="form.status" placeholder="请选择状态" style="width: 370px;" filterable>
             <el-option v-for="item in statusTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
           </el-select>
         </template>
       </el-form-item>
       <el-form-item label="申请事项" prop="accountingSubjects">
         <template>
-          <el-select v-model="accountingSubjectsId" placeholder="请先选择公司" style="width: 370px;" >
+          <el-select v-model="accountingSubjectsId" placeholder="请先选择公司" style="width: 370px;">
             <el-option v-for="(item, index) in accountingSubjects" :key="item.id + index" :label="item.subjectName" :value="item.id" />
           </el-select>
         </template>
@@ -207,11 +207,15 @@ export default {
     },
     getUsers(id) {
       getUsers({
-        deptId: id,
-        enabled: true
+        deptId: id
       })
         .then(res => {
           this.users = res.content
+          for (var i = 0; i < this.users.length; i++) {
+            if (!this.users[i].enabled) {
+              this.users[i].disabled = true
+            }
+          }
         })
         .catch(err => {
           console.log(err.response.data.message)

@@ -1,12 +1,20 @@
 <template>
   <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
-      <el-form-item label="岗位" prop="jobs">
-        <template>
-          <el-select v-model="jobId" placeholder="请选择" style="width: 370px;" filterable @focus="getJobs">
-            <el-option v-for="(item, index) in jobs" :key="item.name + index" :label="item.name" :value="item.id" />
-          </el-select>
-        </template>
+      <el-form-item label="公司">
+        <el-select v-model="companyId" clearable class="filter-item" placeholder="请选择公司" style="width: 370px;" @change="selectCompanyFun">
+          <el-option v-for="(item, index) in companies" :key="item.name + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="部门">
+        <el-select v-model="deptId" clearable class="filter-item" placeholder="请先选择公司" style="width: 370px;" @change="selectDeptFun">
+          <el-option v-for="(item, index) in depts" :key="item.id + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="岗位">
+        <el-select v-model="jobId" clearable class="filter-item" placeholder="请先选择部门" style="width: 370px;">
+          <el-option v-for="(item, index) in jobs" :key="item.name + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
+        </el-select>
       </el-form-item>
       <el-form-item label="审批级别" prop="sorted">
         <template>
@@ -32,7 +40,8 @@
 
 <script>
 import { add, edit } from '@/api/auditChain'
-import { getJobs } from '@/api/job'
+import { getDepts } from '@/api/dept'
+import { getAllJob } from '@/api/job'
 export default {
   props: {
     isAdd: {
@@ -60,10 +69,16 @@ export default {
         source: '',
         createTime: '',
         updateTime: '',
-        deleted: ''
+        deleted: '',
+        job: { id: '' },
+        dept: { id: '' }
       },
+      depts: [],
+      deptId: null,
       jobId: null,
       jobs: [],
+      companies: [],
+      companyId: null,
       rules: {
         sorted: [{ required: true, message: '审批级别不能为空', trigger: 'blur' }],
         source: [{ required: true, message: '审批范围不能为空', trigger: 'blur' }]
@@ -75,10 +90,25 @@ export default {
       this.resetForm()
     },
     doSubmit() {
+      this.form.deptId = this.deptId
       this.form.jobId = this.jobId
+      this.form.companyId = this.companyId
+      this.form.dept = null
+      this.form.company = null
+      this.form.job = null
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.jobId === null || this.jobId === undefined) {
+          if (this.companyId === null || this.companyId === undefined) {
+            this.$message({
+              message: '公司不能为空',
+              type: 'warning'
+            })
+          } else if (this.deptId === null || this.deptId === undefined) {
+            this.$message({
+              message: '部门不能为空',
+              type: 'warning'
+            })
+          } else if (this.jobId === null || this.jobId === undefined) {
             this.$message({
               message: '岗位不能为空',
               type: 'warning'
@@ -131,7 +161,11 @@ export default {
     resetForm() {
       this.dialog = false
       this.$refs['form'].resetFields()
+      this.deptId = null
       this.jobId = null
+      this.companyId = null
+      this.depts = []
+      this.jobs = []
       this.form = {
         id: '',
         jobs: { id: '' },
@@ -139,17 +173,59 @@ export default {
         source: '',
         createTime: '',
         updateTime: '',
-        deleted: ''
+        deleted: '',
+        job: { id: '' }, dept: { id: '' }, company: { id: '' }
       }
     },
-    getJobs() {
-      getJobs({ enabled: 1 })
+    getJobs(id) {
+      getAllJob(id)
         .then(res => {
           this.jobs = res.content
+          for (var i = 0; i < this.jobs.length; i++) {
+            if (!this.jobs[i].enabled) {
+              this.jobs[i].disabled = true
+            }
+          }
         })
         .catch(err => {
           console.log(err.response.data.message)
         })
+    },
+    getDepts(id) {
+      getDepts({ pid: id === null ? -1 : id })
+        .then(res => {
+          this.depts = res.content
+          for (var i = 0; i < this.depts.length; i++) {
+            if (!this.depts[i].enabled) {
+              this.depts[i].disabled = true
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
+    },
+    getCompanies() {
+      getDepts({ pid: 1 })
+        .then(res => {
+          this.companies = res.content
+          for (var i = 0; i < this.companies.length; i++) {
+            if (!this.companies[i].enabled) {
+              this.companies[i].disabled = true
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
+    },
+    selectCompanyFun(node) {
+      this.getDepts(node)
+      this.deptId = null
+    },
+    selectDeptFun(node) {
+      this.getJobs(node)
+      this.jobId = null
     }
   }
 }

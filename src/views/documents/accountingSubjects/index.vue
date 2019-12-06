@@ -21,7 +21,6 @@
     <eForm ref="form" :is-add="isAdd" />
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%;">
-      <!-- <el-table-column prop="id" label="主键ID"/> -->
       <el-table-column v-model="companyId" prop="company.name" label="公司" />
       <el-table-column prop="subjectCode" label="科目代码" />
       <el-table-column prop="subjectName" label="科目名称" />
@@ -78,12 +77,10 @@ export default {
       companies: [],
       companyId: null,
       queryTypeOptions: [
-        // { key: 'id', display_name: '自增主键ID' },
         { key: 'subjectCode', display_name: '科目代码' },
         { key: 'subjectName', display_name: '科目名称' },
         { key: 'auxiliaryAccountType', display_name: '辅助账类型' },
         { key: 'itemDetails', display_name: '辅助核算项目明细' }
-        // { key: 'createTime', display_name: '创建时间' }
       ]
     }
   },

@@ -181,9 +181,9 @@ export default {
         createTime: '',
         updateTime: '',
         deleted: '',
-        users: { id: '' },
-        documents: { id: '' },
-        company: { id: '' }
+        users: [],
+        documents: [],
+        companies: []
       }
       for (var i = 0; i < this.sortedTypeOptions.length; i++) {
         this.sortedTypeOptions[i].disabled = false
@@ -193,6 +193,7 @@ export default {
     // 选择单据ID绑定@change事件
     selectSourceFun(node) {
       if (node) {
+        this.source = (this.documents.find(o => o.id === node).source === '申请流程' ? 0 : 1)
         this.getDisableSorted(node, this.source)
         if (this.sorted) {
           this.getAuditUsers(this.sorted, this.source)

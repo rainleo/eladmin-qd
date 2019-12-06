@@ -1,9 +1,14 @@
 <template>
   <el-dialog :append-to-body="true" :before-close="cancel" :visible.sync="dialog" :title="isAdd ? '新增' : '编辑'" width="500px">
     <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
+      <el-form-item label="公司">
+        <el-select v-model="companyId" clearable class="filter-item" placeholder="请选择公司" style="width: 370px;" @change="selectCompanyFun">
+          <el-option v-for="(item, index) in companies" :key="item.name + index" :label="item.name" :value="item.id" :disabled="item.disabled" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="单据ID" prop="documents">
         <el-select v-model="documentId" :options="documents" placeholder="请选择单据ID" style="width: 370px;" @change="selectSourceFun">
-          <el-option v-for="(item, index) in documents" :key="index" :label="item.id" :value="item.source + '_' + item.id + '_' + index">
+          <el-option v-for="(item, index) in documents" :key="index" :label="item.id" :value="item.id">
             <span style="float: left">{{ item.id }}</span>
             <span style="float: right; color: #8492a6; font-size: 13px">{{ item.source }}</span>
             <span style="float: right; color: #8492a6; font-size: 13px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -39,6 +44,7 @@
 
 <script>
 import { add, edit, getAllDocuments, getDisableSorted } from '@/api/documentReviewer'
+import { getDepts } from '@/api/dept'
 import { getAuditUsers } from '@/api/auditChain'
 import { Select, Option } from 'element-ui'
 export default {
@@ -62,8 +68,11 @@ export default {
         createTime: '',
         updateTime: '',
         deleted: '',
-        users: { id: '' }
+        users: { id: '' },
+        company: { id: '' }
       },
+      companies: [],
+      companyId: null,
       documentId: null,
       userId: null,
       documents: [],
@@ -89,11 +98,19 @@ export default {
     },
     doSubmit() {
       this.form.userId = this.userId
+      this.form.companyId = this.companyId
+      this.form.documentId = this.documentId
+      this.form.company = null
       this.form.user = null
       this.form.source = this.source
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.documentId === null || this.documentId === undefined) {
+          if (this.companyId === null || this.companyId === undefined) {
+            this.$message({
+              message: '公司不能为空',
+              type: 'warning'
+            })
+          } else if (this.documentId === null || this.documentId === undefined) {
             this.$message({
               message: 'ID不能为空',
               type: 'warning'
@@ -151,8 +168,10 @@ export default {
     resetForm() {
       this.dialog = false
       this.$refs['form'].resetFields()
+      this.companyId = null
       this.documentId = null
       this.userId = null
+      this.sorted = null
       this.form = {
         id: '',
         documentId: '',
@@ -163,23 +182,28 @@ export default {
         updateTime: '',
         deleted: '',
         users: { id: '' },
-        documents: { id: '' }
+        documents: { id: '' },
+        company: { id: '' }
+      }
+      for (var i = 0; i < this.sortedTypeOptions.length; i++) {
+        this.sortedTypeOptions[i].disabled = false
       }
     },
 
     // 选择单据ID绑定@change事件
     selectSourceFun(node) {
-      if (node != null || node !== undefined) {
-        this.source = node.substring(0, 4) === '申请流程' ? 0 : 1
-        // change时，审批顺序进行过滤————已审批等级禁用
-        const id = this.documentId.split('_')[1]
-        this.getDisableSorted(id, this.source)
-        if (this.sorted != null && this.sorted !== undefined) {
+      if (node) {
+        this.getDisableSorted(node, this.source)
+        if (this.sorted) {
           this.getAuditUsers(this.sorted, this.source)
         }
       }
     },
 
+    selectCompanyFun(node) {
+      this.getDocuments(node)
+      this.documentId = null
+    },
     // 选择审批顺序绑定@change事件
     selectSortedFun(node) {
       if (node === null || node === undefined) {
@@ -189,10 +213,24 @@ export default {
       if (this.source === null || this.source === undefined) {
         return false
       }
-      this.getAuditUsers(this.sorted, this.source)
+      this.getAuditUsers(this.companyId, this.sorted, this.source)
     },
-    getDocuments() {
-      getAllDocuments()
+    getCompanies() {
+      getDepts({ pid: 1 })
+        .then(res => {
+          this.companies = res.content
+          for (var i = 0; i < this.companies.length; i++) {
+            if (!this.companies[i].enabled) {
+              this.companies[i].disabled = true
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err.response.data.message)
+        })
+    },
+    getDocuments(id) {
+      getAllDocuments({ companyId: id === null ? -1 : id })
         .then(res => {
           this.documents = res
         })
@@ -203,6 +241,7 @@ export default {
 
     getAuditUsers(sorted, source) {
       getAuditUsers({
+        companyId: this.companyId,
         sorted: this.sorted,
         source: this.source
       })

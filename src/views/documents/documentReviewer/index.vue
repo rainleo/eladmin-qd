@@ -3,6 +3,8 @@
     <!--工具栏-->
     <div class="head-container">
       <!-- 搜索 -->
+      <!--公司数据-->
+      <el-input v-model="query.companyName" clearable placeholder="输入公司" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" />
       <el-input v-model="query.value" clearable placeholder="输入搜索内容" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" />
       <el-select v-model="query.type" clearable placeholder="类型" class="filter-item" style="width: 130px">
         <el-option v-for="item in queryTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
@@ -28,6 +30,7 @@
     <eForm ref="form" :is-add="isAdd" />
     <!--表格渲染-->
     <el-table v-loading="loading" :data="data" size="small" style="width: 100%;">
+      <el-table-column v-model="companyId" prop="company.name" label="公司" />
       <el-table-column prop="documentId" label="单据ID" />
       <el-table-column prop="user.username" label="审批人" />
       <el-table-column prop="sorted" label="审批顺序" />
@@ -84,8 +87,9 @@ export default {
   data() {
     return {
       delLoading: false,
+      companies: [],
+      companyId: null,
       queryTypeOptions: [
-        // { key: 'id', display_name: '主键ID' },
         { key: 'documentId', display_name: '单据ID' },
         { key: 'userName', display_name: '审批人' }
       ],
@@ -119,17 +123,21 @@ export default {
       const sorted = query.sorted
       const source = query.source
       const auditStatus = query.auditStatus
+      const companyName = query.companyName
       if (type && value) {
         this.params[type] = value
       }
-      if (sorted !== '' && sorted !== null) {
+      if (sorted) {
         this.params['sorted'] = sorted
       }
-      if (source !== '' && source !== null) {
+      if (source) {
         this.params['source'] = source
       }
-      if (auditStatus !== '' && auditStatus !== null) {
+      if (auditStatus) {
         this.params['auditStatus'] = auditStatus
+      }
+      if (companyName) {
+        this.params['companyName'] = query.companyName
       }
       return true
     },
@@ -156,7 +164,7 @@ export default {
     add() {
       this.isAdd = true
       this.$refs.form.dialog = true
-      this.$refs.form.getDocuments()
+      this.$refs.form.getCompanies()
     },
     edit(data) {
       this.isAdd = false
@@ -171,12 +179,15 @@ export default {
         createTime: data.createTime,
         updateTime: data.updateTime,
         deleted: data.deleted,
+        company: { id: data.company.pid },
         user: { id: data.user.id, username: data.user.username }
       }
       _this.documentId = data.documentId
       _this.userId = data.user.id
-      _this.getDocuments()
-      _this.getAuditUsers(_this.sorted, _this.source)
+      _this.companyId = data.company.id
+      _this.getCompanies()
+      _this.getDocuments(_this.companyId)
+      _this.getAuditUsers(_this.companyId, _this.sorted, _this.source)
       _this.getDisableSorted(_this.documentId, _this.source)
       _this.dialog = true
     }
